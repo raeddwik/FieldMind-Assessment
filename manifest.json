@@ -1,0 +1,12 @@
+{
+  "name": "FieldMind - تقييم الصحة النفسية المهنية",
+  "short_name": "FieldMind",
+  "description": "منصة تقييم الصحة النفسية المهنية للعاملين بمواقع إنتاج البترول",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f7",
+  "theme_color": "#315c68",
+  "icons": []
+}

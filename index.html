@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#315c68">
+  <meta name="description" content="منصة تقييم الصحة النفسية المهنية للعاملين بمواقع إنتاج البترول">
+  <title>FieldMind | تقييم الصحة النفسية المهنية</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark" aria-hidden="true">FM</div>
+    <div>
+      <h1>FieldMind</h1>
+      <p>تقييم الصحة النفسية المهنية</p>
+    </div>
+    <span class="secure-label">بوابة آمنة</span>
+  </header>
+
+  <main class="container">
+    <section class="intro panel">
+      <p class="eyebrow">الصحة المهنية · مواقع إنتاج البترول</p>
+      <h2>تقييمك يبدأ بخطوة واعية</h2>
+      <p>أجب عن الأسئلة بهدوء وصدق. هذا التقييم أداة فرز أولي، وليس تشخيصًا طبيًا أو قرارًا منفردًا بشأن اللياقة للعمل.</p>
+    </section>
+
+    <section id="auth-panel" class="panel">
+      <h2>الدخول بالبريد الإلكتروني</h2>
+      <p class="muted">أدخل بريدك الإلكتروني المسجل لاستلام رابط تحقق آمن.</p>
+      <form id="login-form">
+        <label for="email">البريد الإلكتروني</label>
+        <input id="email" name="email" type="email" autocomplete="email" required placeholder="name@example.com">
+        <button type="submit" id="login-button">إرسال رابط الدخول</button>
+      </form>
+      <p id="auth-message" class="message" role="status"></p>
+    </section>
+
+    <section id="app-panel" class="panel hidden">
+      <div class="account-row">
+        <div><span class="muted">تم تسجيل الدخول باسم</span><strong id="current-email"></strong></div>
+        <button id="logout-button" class="secondary" type="button">تسجيل الخروج</button>
+      </div>
+      <div id="admin-banner" class="notice hidden">تم التعرف على حساب إداري. ستظهر السجلات الإدارية بعد إعداد صلاحيات قاعدة البيانات.</div>
+      <div id="start-view">
+        <h2>قبل أن تبدأ</h2>
+        <ul class="plain-list">
+          <li>خصص عدة دقائق للإجابة دون مقاطعة قدر الإمكان.</li>
+          <li>يمكنك إيقاف التقييم قبل إرساله.</li>
+          <li>تُحفظ النتيجة في سجل خاص بحسابك وفق صلاحيات النظام.</li>
+        </ul>
+        <label class="consent"><input id="consent" type="checkbox"> أوافق على إجراء التقييم ومعالجة إجاباتي وفق إشعار الخصوصية المعتمد.</label>
+        <button id="begin-button" type="button" disabled>بدء التقييم التجريبي</button>
+        <p class="small muted">تنبيه: الأسئلة الحالية تجريبية فقط، ويجب استبدالها بمقياسك المعتمد قبل أي استخدام فعلي.</p>
+      </div>
+      <form id="assessment-form" class="hidden">
+        <div class="progress-row"><span id="progress-label">السؤال 1</span><span id="progress-count"></span></div>
+        <div class="progress-track"><div id="progress-bar"></div></div>
+        <div id="questions-container"></div>
+        <div class="form-actions">
+          <button type="button" id="previous-button" class="secondary">السابق</button>
+          <button type="button" id="next-button">التالي</button>
+          <button type="submit" id="submit-assessment-button" class="hidden">إرسال التقييم</button>
+        </div>
+        <p id="form-message" class="message" role="status"></p>
+      </form>
+      <section id="result-view" class="hidden">
+        <h2>تم تسجيل التقييم</h2>
+        <p id="result-summary"></p>
+        <p class="notice">هذه نسخة أولية: لن تظهر نتيجة نفسية محسوبة حتى تُضاف أسئلة المقياس الخاص بك ومعادلاته وحدود تصنيفه المعتمدة.</p>
+        <button id="new-assessment-button" type="button" class="secondary">العودة إلى الصفحة الرئيسية</button>
+      </section>
+    </section>
+
+    <section id="admin-panel" class="panel hidden">
+      <div class="section-heading">
+        <div><p class="eyebrow">صلاحيات إدارية</p><h2>سجلات التقييم</h2></div>
+        <button id="refresh-admin-button" type="button" class="secondary">تحديث السجلات</button>
+      </div>
+      <p class="muted small">تُعرض السجلات التي تسمح بها سياسات قاعدة البيانات للحساب الإداري فقط. تجنب تصدير البيانات الحساسة إلا وفق سياسة الشركة.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>تاريخ التقييم</th><th>معرّف المستخدم</th><th>حالة السجل</th></tr></thead>
+          <tbody id="admin-records"><tr><td colspan="3">لا توجد بيانات محملة.</td></tr></tbody>
+        </table>
+      </div>
+      <p id="admin-message" class="message" role="status"></p>
+    </section>
+  </main>
+
+  <footer><p>FieldMind · نسخة تأسيسية غير مخصصة للاستخدام السريري قبل اعتماد المقياس والتحقق من الأمان والحوكمة.</p></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase.js"></script>
+  <script src="./assessment-config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
