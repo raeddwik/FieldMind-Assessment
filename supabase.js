@@ -4,8 +4,9 @@
   2) Replace both placeholders below with the Project URL and Publishable/anon key.
   3) Never put a service_role/secret key in this public file.
 */
-const SUPABASE_URL = "https://YOUR_PROJECT_REF.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY";
+
+const SUPABASE_URL = 'bxhzzikfafazovzoyasy';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_1F9Mh8BpA4HiKOayK6kYfQ_9bsrWW1m';
 
 window.fieldMindSupabase = null;
 if (window.supabase && SUPABASE_URL.startsWith("https://") &&
