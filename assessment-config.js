@@ -149,9 +149,53 @@ items: [
     id: "dep_09",
     domain: "depression",
     responseScale: "frequency_0_3",
+    
     text: "راودتني أفكار بإيذاء نفسي أو التخلص من حياتي"
+  },
+  {
+    id: "anx_10",
+    domain: "anxiety",
+    responseScale: "frequency_0_3",
+    text: "شعرت بالتوتر أو العصبية"
+  },
+  {
+    id: "anx_11",
+    domain: "anxiety",
+    responseScale: "frequency_0_3",
+    text: "لم أستطع السيطرة على القلق"
+  },
+  {
+    id: "anx_12",
+    domain: "anxiety",
+    responseScale: "frequency_0_3",
+    text: "شعرت بقلق مفرط"
+  },
+  {
+    id: "anx_13",
+    domain: "anxiety",
+    responseScale: "frequency_0_3",
+    text: "عانيت من صعوبة الاسترخاء"
+  },
+  {
+    id: "anx_14",
+    domain: "anxiety",
+    responseScale: "frequency_0_3",
+    text: "شعرت بالتململ"
+  },
+  {
+    id: "anx_15",
+    domain: "anxiety",
+    responseScale: "frequency_0_3",
+    text: "أصبحت سريع الانفعال"
+  },
+  {
+    id: "anx_16",
+    domain: "anxiety",
+    responseScale: "frequency_0_3",
+    text: "شعرت بخوف ليس له سبب أو إحساس باقتراب حدوث كارثة"
   }
 ],
+
 
   scoring: {
     enabled: false,
