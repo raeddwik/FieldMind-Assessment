@@ -346,8 +346,38 @@ items: [
   domain: "psychosocial_stress",
   responseScale: "frequency_0_4",
   text: "أشعر بضعف الدعم الإداري أثناء الضغوط"
-}
+},
 
+{
+  id: "function_26",
+  domain: "functional_impact",
+  responseScale: "frequency_0_4",
+  text: "حالتي النفسية أثرت على أدائي الوظيفي"
+},
+{
+  id: "function_27",
+  domain: "functional_impact",
+  responseScale: "frequency_0_4",
+  text: "زادت أخطائي أثناء العمل"
+},
+{
+  id: "function_28",
+  domain: "functional_impact",
+  responseScale: "frequency_0_4",
+  text: "أصبحت أقل قدرة على التركيز"
+},
+{
+  id: "function_29",
+  domain: "functional_impact",
+  responseScale: "frequency_0_4",
+  text: "أصبحت أقل قدرة على اتخاذ القرار"
+},
+{
+  id: "function_30",
+  domain: "functional_impact",
+  responseScale: "frequency_0_4",
+  text: "أثرت الضغوط على علاقتي بالزملاء"
+}
 ],
 
 
