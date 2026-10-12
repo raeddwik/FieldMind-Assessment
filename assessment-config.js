@@ -508,12 +508,60 @@ items: [
   responseScale: "satisfaction_1_5",
   text: "أشعر بالأمان أثناء العمل"
 },
-{
-  id: "satisfaction_12",
-  domain: "job_satisfaction",
-  responseScale: "satisfaction_1_5",
-  text: "أستطيع التوازن بين العمل والحياة"
-}
+  {
+    id: "satisfaction_12",
+    domain: "job_satisfaction",
+    responseScale: "satisfaction_1_5",
+    text: "أستطيع التوازن بين العمل والحياة"
+  },
+  {
+    id: "critical_01",
+    domain: "critical_indicators",
+    responseScale: "yes_no",
+    text: "هل راودتك أفكار عن الانتحار؟"
+  },
+  {
+    id: "critical_02",
+    domain: "critical_indicators",
+    responseScale: "yes_no",
+    text: "هل فكرت في إيذاء نفسك عمدًا؟"
+  },
+  {
+    id: "critical_03",
+    domain: "critical_indicators",
+    responseScale: "yes_no",
+    text: "هل شعرت أنك قد تؤذي شخصًا آخر؟"
+  },
+  {
+    id: "critical_04",
+    domain: "critical_indicators",
+    responseScale: "yes_no",
+    text: "هل سمعت أصواتًا أو رأيت أشياء لم يدركها الآخرون؟"
+  },
+  {
+    id: "critical_05",
+    domain: "critical_indicators",
+    responseScale: "yes_no",
+    text: "هل مررت بتغير سلوكي حاد أو فقدت السيطرة على سلوكك؟"
+  },
+  {
+    id: "critical_06",
+    domain: "critical_indicators",
+    responseScale: "yes_no",
+    text: "هل لاحظت تدهورًا شديدًا ومفاجئًا في قدرتك على أداء مهامك اليومية أو الوظيفية؟"
+  },
+  {
+    id: "critical_07",
+    domain: "critical_indicators",
+    responseScale: "yes_no",
+    text: "هل تعرضت لنوبة هلع شديدة أثرت بوضوح على قدرتك على التصرف بأمان؟"
+  },
+  {
+    id: "critical_08",
+    domain: "critical_indicators",
+    responseScale: "yes_no",
+    text: "هل شعرت بوجود خطر وشيك بأن تؤذي نفسك أو يؤذيك شخص آخر؟"
+  }
 ],
 
 
