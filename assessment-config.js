@@ -65,35 +65,36 @@ window.FIELD_MIND_ASSESSMENT = {
     }
   ],
 
-  responseScales: {
-    frequency_0_3: [
-      { label: "أبدًا", value: 0 },
-      { label: "عدة أيام", value: 1 },
-      { label: "أكثر من نصف الأيام", value: 2 },
-      { label: "تقريبًا يوميًا", value: 3 }
-    ],
+ 
+responseScales: {
+  frequency_0_3: [
+    { label: "أبدًا", value: 0 },
+    { label: "عدة أيام", value: 1 },
+    { label: "أكثر من نصف الأيام", value: 2 },
+    { label: "تقريبًا يوميًا", value: 3 }
+  ],
 
-    frequency_0_4: [
-      { label: "أبدًا", value: 0 },
-      { label: "نادرًا", value: 1 },
-      { label: "أحيانًا", value: 2 },
-      { label: "غالبًا", value: 3 },
-      { label: "دائمًا", value: 4 }
-    ],
+  frequency_0_4: [
+    { label: "أبدًا", value: 0 },
+    { label: "نادرًا", value: 1 },
+    { label: "أحيانًا", value: 2 },
+    { label: "غالبًا", value: 3 },
+    { label: "دائمًا", value: 4 }
+  ],
 
-    satisfaction_1_5: [
-      { label: "1", value: 1 },
-      { label: "2", value: 2 },
-      { label: "3", value: 3 },
-      { label: "4", value: 4 },
-      { label: "5", value: 5 }
-    ],
+  satisfaction_1_5: [
+    { label: "خطأ بشدة", value: 1 },
+    { label: "خطأ", value: 2 },
+    { label: "محايد", value: 3 },
+    { label: "موافق", value: 4 },
+    { label: "موافق جدًا", value: 5 }
+  ],
 
-    yes_no: [
-      { label: "لا", value: 0 },
-      { label: "نعم", value: 1 }
-    ]
-  },
+  yes_no: [
+    { label: "لا", value: 0 },
+    { label: "نعم", value: 1 }
+  ]
+},
 
 
 items: [
