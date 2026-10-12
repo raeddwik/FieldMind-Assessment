@@ -52,7 +52,7 @@
     $("questions-container").innerHTML = `
       <div class="question-title">${escapeHtml(item.text)}</div>
       <div role="radiogroup" aria-label="${escapeHtml(item.text)}">
-      ${config.options.map(o => `<label class="choice"><input type="radio" name="answer" value="${o.value}" ${String(selected) === String(o.value) ? "checked" : ""}><span>${escapeHtml(o.label)}</span></label>`).join("")}
+${(item.options || config.responseScales[item.responseScale] || []).map(o => `<label class="choice"><input type="radio" name="answer" value="${o.value}" ${String(selected) === String(o.value) ? "checked" : ""}><span>${escapeHtml(o.label)}</span></label>`).join("")}
       </div>`;
     $("previous-button").disabled = currentQuestion === 0;
     $("next-button").classList.toggle("hidden", currentQuestion === config.items.length - 1);
