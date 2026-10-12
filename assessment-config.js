@@ -297,6 +297,55 @@ items: [
   domain: "sleep_fatigue",
   responseScale: "frequency_0_4",
   text: "قلة النوم أثرت على تركيزي"
+},
+
+{
+  id: "stress_18",
+  domain: "psychosocial_stress",
+  responseScale: "frequency_0_4",
+  text: "البعد عن الأسرة يؤثر على نفسيتي"
+},
+{
+  id: "stress_19",
+  domain: "psychosocial_stress",
+  responseScale: "frequency_0_4",
+  text: "أشعر بالعزلة داخل الموقع"
+},
+{
+  id: "stress_20",
+  domain: "psychosocial_stress",
+  responseScale: "frequency_0_4",
+  text: "ضغط ساعات العمل يسبب لي ضغطًا نفسيًا"
+},
+{
+  id: "stress_21",
+  domain: "psychosocial_stress",
+  responseScale: "frequency_0_4",
+  text: "الظروف المناخية تؤثر على حالتي النفسية"
+},
+{
+  id: "stress_22",
+  domain: "psychosocial_stress",
+  responseScale: "frequency_0_4",
+  text: "أخشى التعرض للحوادث أثناء العمل"
+},
+{
+  id: "stress_23",
+  domain: "psychosocial_stress",
+  responseScale: "frequency_0_4",
+  text: "أشعر بأن متطلبات العمل مرتفعة جدًا"
+},
+{
+  id: "stress_24",
+  domain: "psychosocial_stress",
+  responseScale: "frequency_0_4",
+  text: "العمل الليلي يؤثر على صحتي النفسية"
+},
+{
+  id: "stress_25",
+  domain: "psychosocial_stress",
+  responseScale: "frequency_0_4",
+  text: "أشعر بضعف الدعم الإداري أثناء الضغوط"
 }
 
 ],
