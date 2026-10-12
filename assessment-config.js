@@ -408,7 +408,38 @@ items: [
   domain: "psychological_safety",
   responseScale: "frequency_0_4",
   text: "لا أخشى العقاب غير العادل"
-}
+},
+
+{
+  id: "positive_06",
+  domain: "positive_mental_health",
+  responseScale: "frequency_0_4",
+  text: "أستطيع التكيف مع الضغوط"
+},
+{
+  id: "positive_07",
+  domain: "positive_mental_health",
+  responseScale: "frequency_0_4",
+  text: "لدي دعم اجتماعي جيد"
+},
+{
+  id: "positive_08",
+  domain: "positive_mental_health",
+  responseScale: "frequency_0_4",
+  text: "أشعر أن عملي له معنى وقيمة"
+},
+{
+  id: "positive_09",
+  domain: "positive_mental_health",
+  responseScale: "frequency_0_4",
+  text: "أستطيع طلب المساعدة عند الحاجة"
+},
+{
+  id: "positive_10",
+  domain: "positive_mental_health",
+  responseScale: "frequency_0_4",
+  text: "أتعافى بسرعة بعد الضغوط"
+}  
 ],
 
 
