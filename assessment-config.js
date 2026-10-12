@@ -188,12 +188,74 @@ items: [
     responseScale: "frequency_0_3",
     text: "أصبحت سريع الانفعال"
   },
-  {
-    id: "anx_16",
-    domain: "anxiety",
-    responseScale: "frequency_0_3",
-    text: "شعرت بخوف ليس له سبب أو إحساس باقتراب حدوث كارثة"
-  }
+  
+{
+  id: "anx_16",
+  domain: "anxiety",
+  responseScale: "frequency_0_3",
+  text: "شعرت بخوف ليس له سبب أو إحساس باقتراب حدوث كارثة"
+},
+{
+  id: "burnout_01",
+  domain: "burnout",
+  responseScale: "frequency_0_4",
+  text: "أشعر بالاستنزاف النفسي بسبب العمل"
+},
+{
+  id: "burnout_02",
+  domain: "burnout",
+  responseScale: "frequency_0_4",
+  text: "أشعر أن طاقتي مستنزفة"
+},
+{
+  id: "burnout_03",
+  domain: "burnout",
+  responseScale: "frequency_0_4",
+  text: "أشعر بالإجهاد عند التفكير في العمل"
+},
+{
+  id: "burnout_04",
+  domain: "burnout",
+  responseScale: "frequency_0_4",
+  text: "أشعر أن ضغوط العمل تفوق قدرتي"
+},
+{
+  id: "burnout_05",
+  domain: "burnout",
+  responseScale: "frequency_0_4",
+  text: "أصبحت أقل حماسًا للعمل"
+},
+{
+  id: "burnout_06",
+  domain: "burnout",
+  responseScale: "frequency_0_4",
+  text: "أشعر أنني أعمل بشكل آلي"
+},
+{
+  id: "burnout_07",
+  domain: "burnout",
+  responseScale: "frequency_0_4",
+  text: "أصبحت أقل صبرًا مع الزملاء"
+},
+{
+  id: "burnout_08",
+  domain: "burnout",
+  responseScale: "frequency_0_4",
+  text: "أشعر بانخفاض كفاءتي المهنية"
+},
+{
+  id: "burnout_09",
+  domain: "burnout",
+  responseScale: "frequency_0_4",
+  text: "أشعر أن أدائي أقل من المعتاد"
+},
+{
+  id: "burnout_10",
+  domain: "burnout",
+  responseScale: "frequency_0_4",
+  text: "أشعر أنني أقل قدرة على الإنجاز"
+}
+
 ],
 
 
