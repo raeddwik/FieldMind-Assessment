@@ -254,6 +254,49 @@ items: [
   domain: "burnout",
   responseScale: "frequency_0_4",
   text: "أشعر أنني أقل قدرة على الإنجاز"
+},
+  
+{
+  id: "sleep_11",
+  domain: "sleep_fatigue",
+  responseScale: "frequency_0_4",
+  text: "أعاني من صعوبة في النوم"
+},
+{
+  id: "sleep_12",
+  domain: "sleep_fatigue",
+  responseScale: "frequency_0_4",
+  text: "أستيقظ مرهقًا"
+},
+{
+  id: "sleep_13",
+  domain: "sleep_fatigue",
+  responseScale: "frequency_0_4",
+  text: "الورديات تؤثر على جودة نومي"
+},
+{
+  id: "sleep_14",
+  domain: "sleep_fatigue",
+  responseScale: "frequency_0_4",
+  text: "أشعر بالنعاس أثناء العمل"
+},
+{
+  id: "sleep_15",
+  domain: "sleep_fatigue",
+  responseScale: "frequency_0_4",
+  text: "أعاني من اضطراب مواعيد النوم"
+},
+{
+  id: "sleep_16",
+  domain: "sleep_fatigue",
+  responseScale: "frequency_0_4",
+  text: "أشعر بإجهاد مستمر حتى بعد الراحة"
+},
+{
+  id: "sleep_17",
+  domain: "sleep_fatigue",
+  responseScale: "frequency_0_4",
+  text: "قلة النوم أثرت على تركيزي"
 }
 
 ],
