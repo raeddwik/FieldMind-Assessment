@@ -95,7 +95,63 @@ window.FIELD_MIND_ASSESSMENT = {
     ]
   },
 
-  items: [],
+
+items: [
+  {
+    id: "dep_01",
+    domain: "depression",
+    responseScale: "frequency_0_3",
+    text: "فقدت الاهتمام أو المتعة في الأنشطة اليومية"
+  },
+  {
+    id: "dep_02",
+    domain: "depression",
+    responseScale: "frequency_0_3",
+    text: "شعرت بالحزن أو الاكتئاب"
+  },
+  {
+    id: "dep_03",
+    domain: "depression",
+    responseScale: "frequency_0_3",
+    text: "عانيت من اضطراب النوم"
+  },
+  {
+    id: "dep_04",
+    domain: "depression",
+    responseScale: "frequency_0_3",
+    text: "شعرت بالتعب أو انخفاض الطاقة"
+  },
+  {
+    id: "dep_05",
+    domain: "depression",
+    responseScale: "frequency_0_3",
+    text: "تغيرت شهيتي للطعام"
+  },
+  {
+    id: "dep_06",
+    domain: "depression",
+    responseScale: "frequency_0_3",
+    text: "شعرت بالفشل أو انعدام القيمة"
+  },
+  {
+    id: "dep_07",
+    domain: "depression",
+    responseScale: "frequency_0_3",
+    text: "عانيت من ضعف التركيز"
+  },
+  {
+    id: "dep_08",
+    domain: "depression",
+    responseScale: "frequency_0_3",
+    text: "شعرت بالبطء أو التململ"
+  },
+  {
+    id: "dep_09",
+    domain: "depression",
+    responseScale: "frequency_0_3",
+    text: "راودتني أفكار بإيذاء نفسي أو التخلص من حياتي"
+  }
+],
 
   scoring: {
     enabled: false,
