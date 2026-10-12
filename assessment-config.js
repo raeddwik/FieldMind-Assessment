@@ -439,7 +439,80 @@ items: [
   domain: "positive_mental_health",
   responseScale: "frequency_0_4",
   text: "أتعافى بسرعة بعد الضغوط"
-}  
+},
+  
+{
+  id: "satisfaction_01",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "أشعر بالرضا عن بيئة العمل"
+},
+{
+  id: "satisfaction_02",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "الإدارة تستمع للعاملين"
+},
+{
+  id: "satisfaction_03",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "أشعر بالعدالة التنظيمية"
+},
+{
+  id: "satisfaction_04",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "أستطيع التعبير عن رأيي بحرية"
+},
+{
+  id: "satisfaction_05",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "توجد فرص للتطوير والترقي"
+},
+{
+  id: "satisfaction_06",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "أشعر أن جهدي مقدر"
+},
+{
+  id: "satisfaction_07",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "السكن بالموقع مناسب"
+},
+{
+  id: "satisfaction_08",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "الإعاشة والخدمات مناسبة"
+},
+{
+  id: "satisfaction_09",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "العبء الوظيفي مناسب"
+},
+{
+  id: "satisfaction_10",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "توجد روح تعاون بين الزملاء"
+},
+{
+  id: "satisfaction_11",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "أشعر بالأمان أثناء العمل"
+},
+{
+  id: "satisfaction_12",
+  domain: "job_satisfaction",
+  responseScale: "satisfaction_1_5",
+  text: "أستطيع التوازن بين العمل والحياة"
+}
 ],
 
 
