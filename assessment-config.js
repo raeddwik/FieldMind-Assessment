@@ -377,6 +377,37 @@ items: [
   domain: "functional_impact",
   responseScale: "frequency_0_4",
   text: "أثرت الضغوط على علاقتي بالزملاء"
+},
+  
+{
+  id: "safety_01",
+  domain: "psychological_safety",
+  responseScale: "frequency_0_4",
+  text: "أستطيع التعبير عن المشكلات دون خوف"
+},
+{
+  id: "safety_02",
+  domain: "psychological_safety",
+  responseScale: "frequency_0_4",
+  text: "لا أخشى طلب المساعدة"
+},
+{
+  id: "safety_03",
+  domain: "psychological_safety",
+  responseScale: "frequency_0_4",
+  text: "يتم التعامل باحترام داخل الفريق"
+},
+{
+  id: "safety_04",
+  domain: "psychological_safety",
+  responseScale: "frequency_0_4",
+  text: "أشعر بالأمان عند مناقشة الأخطاء"
+},
+{
+  id: "safety_05",
+  domain: "psychological_safety",
+  responseScale: "frequency_0_4",
+  text: "لا أخشى العقاب غير العادل"
 }
 ],
 
