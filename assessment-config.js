@@ -12,78 +12,79 @@ window.FIELD_MIND_ASSESSMENT = {
   instructions:
     "يرجى قراءة كل عبارة واختيار الإجابة التي تعبّر عن تجربتك.",
 
-  domains: [
-    {
-      id: "depression",
-      title: "أعراض الاكتئاب",
-      scoringStatus: "pending_validation",
-      scoreDirection: "higher_more_symptoms",
-      scoreMeaning: "ارتفاع الدرجة يشير إلى زيادة الإبلاغ عن الأعراض، ولا يمثل تشخيصًا."
-    },
-    {
-      id: "anxiety",
-      title: "أعراض القلق",
-      scoringStatus: "pending_validation",
-      scoreDirection: "higher_more_symptoms",
-      scoreMeaning: "ارتفاع الدرجة يشير إلى زيادة الإبلاغ عن أعراض القلق، ولا يمثل تشخيصًا."
-    },
-    {
-      id: "burnout",
-      title: "الاحتراق النفسي",
-      scoringStatus: "pending_validation",
-      scoreDirection: "higher_more_symptoms",
-      scoreMeaning: "يُراجع المعنى النهائي وفق صياغة البنود ومفتاح التصحيح المعتمد."
-    },
-    {
-      id: "sleep_fatigue",
-      title: "النوم والإجهاد",
-      scoringStatus: "pending_validation",
-      scoreDirection: "pending_item_review",
-      scoreMeaning: "يُحدد اتجاه الدرجة بعد مراجعة صياغة جميع البنود."
-    },
-    {
-      id: "psychosocial_stress",
-      title: "الضغوط النفسية والاجتماعية في العمل",
-      scoringStatus: "pending_validation",
-      scoreDirection: "higher_more_stress",
-      scoreMeaning: "ارتفاع الدرجة يشير مبدئيًا إلى زيادة الإبلاغ عن الضغوط."
-    },
-    {
-      id: "functional_impact",
-      title: "التأثير الوظيفي",
-      scoringStatus: "pending_validation",
-      scoreDirection: "pending_item_review",
-      scoreMeaning: "يُحدد اتجاه الدرجة النهائي وفق صياغة البنود ومفتاح التصحيح."
-    },
-    {
-      id: "psychological_safety",
-      title: "السلامة النفسية في بيئة العمل",
-      scoringStatus: "pending_validation",
-      scoreDirection: "higher_more_safety_endorsement",
-      scoreMeaning: "ارتفاع الدرجة يعني مزيدًا من الموافقة على البنود بصيغتها الحالية؛ ويحتاج تفسيرها إلى مراجعة البنود."
-    },
-    {
-      id: "positive_mental_health",
-      title: "الصحة النفسية الإيجابية والمرونة",
-      scoringStatus: "pending_validation",
-      scoreDirection: "higher_more_positive_endorsement",
-      scoreMeaning: "ارتفاع الدرجة يعني مزيدًا من الموافقة على البنود الإيجابية بصيغتها الحالية؛ ولا يثبت وحده مستوى الصحة النفسية."
-    },
-    {
-      id: "job_satisfaction",
-      title: "الرضا الوظيفي",
-      scoringStatus: "pending_validation",
-      scoreDirection: "higher_more_satisfaction_endorsement",
-      scoreMeaning: "ارتفاع الدرجة يعني مزيدًا من الموافقة على بنود الرضا بصيغتها الحالية؛ ويظل التفسير النهائي رهين مفتاح التصحيح."
-    },
-    {
-      id: "critical_indicators",
-      title: "مؤشرات الخطورة النفسية",
-      scoringStatus: "pending_review",
-      scoreDirection: "separate_review_required",
-      scoreMeaning: "تُراجع الإجابات الإيجابية وفق مسار منفصل؛ ولا تُفسر بوصفها تشخيصًا تلقائيًا."
-    }
-  ],
+  
+domains: [
+  {
+    id: "depression",
+    title: "أعراض الاكتئاب",
+    scoringStatus: "pending_validation",
+    scoreDirection: "higher_more_symptoms",
+    scoreMeaning: "ارتفاع الدرجة يشير إلى زيادة الإبلاغ عن الأعراض، ولا يمثل تشخيصًا."
+  },
+  {
+    id: "anxiety",
+    title: "أعراض القلق",
+    scoringStatus: "pending_validation",
+    scoreDirection: "higher_more_symptoms",
+    scoreMeaning: "ارتفاع الدرجة يشير إلى زيادة الإبلاغ عن أعراض القلق، ولا يمثل تشخيصًا."
+  },
+  {
+    id: "burnout",
+    title: "الاحتراق النفسي",
+    scoringStatus: "pending_validation",
+    scoreDirection: "higher_more_symptoms",
+    scoreMeaning: "ارتفاع الدرجة يشير مبدئيًا إلى زيادة الإبلاغ عن مظاهر الاحتراق النفسي."
+  },
+  {
+    id: "sleep_fatigue",
+    title: "النوم والإجهاد",
+    scoringStatus: "pending_validation",
+    scoreDirection: "higher_more_sleep_problems",
+    scoreMeaning: "ارتفاع الدرجة يشير إلى زيادة الإبلاغ عن مشكلات النوم والإجهاد والنعاس."
+  },
+  {
+    id: "psychosocial_stress",
+    title: "الضغوط النفسية والاجتماعية في العمل",
+    scoringStatus: "pending_validation",
+    scoreDirection: "higher_more_stress",
+    scoreMeaning: "ارتفاع الدرجة يشير مبدئيًا إلى زيادة الإبلاغ عن الضغوط النفسية والاجتماعية."
+  },
+  {
+    id: "functional_impact",
+    title: "التأثير الوظيفي",
+    scoringStatus: "pending_validation",
+    scoreDirection: "higher_more_functional_impact",
+    scoreMeaning: "ارتفاع الدرجة يشير إلى تأثير سلبي أكبر مُبلّغ عنه على الأداء الوظيفي."
+  },
+  {
+    id: "psychological_safety",
+    title: "السلامة النفسية في بيئة العمل",
+    scoringStatus: "pending_validation",
+    scoreDirection: "higher_more_safety_endorsement",
+    scoreMeaning: "ارتفاع الدرجة يشير إلى موافقة أكبر على عبارات السلامة النفسية الإيجابية، ويحتاج تفسيرها النهائي إلى تحقق من المقياس."
+  },
+  {
+    id: "positive_mental_health",
+    title: "الصحة النفسية الإيجابية والمرونة",
+    scoringStatus: "pending_validation",
+    scoreDirection: "higher_more_positive_endorsement",
+    scoreMeaning: "ارتفاع الدرجة يشير إلى موافقة أكبر على عبارات التكيف والدعم والمرونة الإيجابية، ولا يمثل تشخيصًا."
+  },
+  {
+    id: "job_satisfaction",
+    title: "الرضا الوظيفي",
+    scoringStatus: "pending_validation",
+    scoreDirection: "higher_more_satisfaction_endorsement",
+    scoreMeaning: "ارتفاع الدرجة يشير إلى موافقة أكبر على عبارات الرضا الوظيفي، وفق صياغتها الحالية."
+  },
+  {
+    id: "critical_indicators",
+    title: "مؤشرات الخطورة النفسية",
+    scoringStatus: "pending_review",
+    scoreDirection: "separate_review_required",
+    scoreMeaning: "تُراجع الإجابات الإيجابية وفق مسار منفصل وآمن، ولا تُفسر بوصفها تشخيصًا تلقائيًا."
+  }
+],
 
 responseScales: {
   frequency_0_3: [
