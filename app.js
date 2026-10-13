@@ -70,9 +70,63 @@ ${(item.options || config.responseScales[item.responseScale] || []).map(o => `<l
   }
   async function submitAssessment(event) {
     event.preventDefault();
-    if (!saveCurrentAnswer()) return message("form-message", "يرجى اختيار إجابة قبل المتابعة.", true);
-    if (!validateAllAnswered()) return message("form-message", "توجد أسئلة لم تتم الإجابة عنها.", true);
-    if (!db() || !session) return message("form-message", "تعذر الاتصال الآمن بقاعدة البيانات. تحقق من إعداد Supabase.", true);
+
+if (!saveCurrentAnswer()) {
+  return message(
+    "form-message",
+    "يرجى اختيار إجابة قبل المتابعة.",
+    true
+  );
+}
+
+if (!validateAllAnswered()) {
+  return message(
+    "form-message",
+    "توجد أسئلة لم تتم الإجابة عنها.",
+    true
+  );
+}
+
+// Validate answers and test the scoring engine.
+// Do not save preliminary scores or clinical classifications.
+try {
+  const engine = window.FIELD_MIND_SCORING_ENGINE;
+
+  if (!engine || typeof engine.calculate !== "function") {
+    return message(
+      "form-message",
+      "محرك التحقق غير محمّل. يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+      true
+    );
+  }
+
+  const preview = engine.calculate(answers);
+
+  if (preview.status !== "calculation_preview_only") {
+    return message(
+      "form-message",
+      "تعذر التحقق من الإجابات. راجع اكتمال الإجابات وصحة إعداد المقياس.",
+      true
+    );
+  }
+} catch (error) {
+  console.error("Assessment validation failed:", error);
+
+  return message(
+    "form-message",
+    "حدث خطأ أثناء التحقق من الإجابات. لم يتم إرسال التقييم.",
+    true
+  );
+}
+
+if (!db() || !session) {
+  return message(
+    "form-message",
+    "تعذر الاتصال الآمن بقاعدة البيانات. تحقق من إعداد Supabase.",
+    true
+  );
+}
+
     $("submit-assessment-button").disabled = true;
     message("form-message", "جارٍ حفظ التقييم...");
     const payload = {
