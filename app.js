@@ -11,7 +11,11 @@
   let answers = {};
   let isAdmin = false;
   let isSuperAdmin = false;
-
+  // بيانات لوحة تحليل نتائج التقييمات.
+  let allDashboardRows = [];
+  let visibleDashboardRows = [];
+  let dashboardPage = 0;
+  const dashboardPageSize = 25;
   const panels = ["auth-panel", "app-panel", "admin-panel"];
 
   const criticalIds = new Set([
