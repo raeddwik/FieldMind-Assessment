@@ -75,13 +75,51 @@ ${(item.options || config.responseScales[item.responseScale] || []).map(o => `<l
     if (!db() || !session) return message("form-message", "تعذر الاتصال الآمن بقاعدة البيانات. تحقق من إعداد Supabase.", true);
     $("submit-assessment-button").disabled = true;
     message("form-message", "جارٍ حفظ التقييم...");
-    const payload = {
-      user_id: session.user.id,
-      scale_version: config.version,
-      answers: answers,
-      result: { status: "pending_scale_configuration", note: "لم يتم احتساب نتيجة نفسية لأن المقياس التجريبي غير معتمد." },
-      consent_given: true
-    };
+
+const scoringEngine = window.FIELD_MIND_SCORING_ENGINE;
+
+if (!scoringEngine || typeof scoringEngine.calculate !== "function") {
+  $("submit-assessment-button").disabled = false;
+  return message(
+    "form-message",
+    "محرك الحساب غير متاح. يرجى تحديث الصفحة والمحاولة مجددًا.",
+    true
+  );
+}
+
+let calculationResult;
+
+try {
+  calculationResult = scoringEngine.calculate(answers);
+} catch (error) {
+  console.error("Scoring error:", error);
+  $("submit-assessment-button").disabled = false;
+  return message(
+    "form-message",
+    "تعذر حساب الدرجات. يرجى مراجعة إعدادات المقياس.",
+    true
+  );
+}
+
+if (
+  calculationResult.status !== "calculation_preview_only"
+) {
+  $("submit-assessment-button").disabled = false;
+  return message(
+    "form-message",
+    "تعذر إكمال الحساب بسبب وجود إجابات أو إعدادات غير صالحة.",
+    true
+  );
+}
+
+const payload = {
+  user_id: session.user.id,
+  scale_version: config.version,
+  answers: answers,
+  result: calculationResult,
+  consent_given: true
+};
+
     const { error } = await db().from("assessments").insert(payload);
     $("submit-assessment-button").disabled = false;
     if (error) {
