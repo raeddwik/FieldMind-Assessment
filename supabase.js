@@ -1,6 +1,6 @@
 
 const SUPABASE_URL = "https://qgjdtxjsvauhtqaaebly.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "ضع_المفتاح_العام_هنا";
+const SUPABASE_PUBLISHABLE_KEY = ;sb_publishable_UQXQgvPHUu158Fdb3PLPwA_owTViu06
 
 window.fieldMindSupabase = null;
 
