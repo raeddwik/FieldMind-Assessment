@@ -60,12 +60,12 @@
   async function checkAdmin() {
     if (!db() || !session) return false;
 
-    const { data, error } = await db()
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", session.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
+const { data, error } = await db()
+  .from("user_roles")
+  .select("role")
+  .eq("user_id", session.user.id)
+  .in("role", ["admin", "super_admin"])
+  .maybeSingle();
 
     if (error) {
       console.warn("Role lookup failed:", error.message);
