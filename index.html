@@ -1,487 +1,101 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#123047">
-
-  <title>FieldMind Assessment | COPHAS</title>
-
-  <style>
-    :root {
-      --primary: #123047;
-      --primary-light: #1c4965;
-      --background: #f3f6f9;
-      --surface: #ffffff;
-      --text: #243746;
-      --muted: #667887;
-      --border: #dce4eb;
-      --danger: #b42318;
-      --danger-bg: #fff0ee;
-      --success: #18794e;
-      --success-bg: #eaf7ef;
-      --warning: #8a5200;
-      --warning-bg: #fff5db;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Tahoma, Arial, sans-serif;
-      background: var(--background);
-      color: var(--text);
-      line-height: 1.8;
-    }
-
-    header {
-      background: var(--primary);
-      color: white;
-      padding: 22px 16px;
-      text-align: center;
-    }
-
-    header h1 {
-      margin: 0 0 6px;
-      font-size: 1.55rem;
-    }
-
-    header p {
-      margin: 0;
-      color: #e0eaf1;
-      font-size: 0.95rem;
-    }
-
-    main {
-      width: min(1100px, 94%);
-      margin: 24px auto 48px;
-    }
-
-    .panel,
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 22px;
-      margin-bottom: 20px;
-      box-shadow: 0 3px 12px rgba(18, 48, 71, 0.05);
-    }
-
-    h2, h3 {
-      color: var(--primary);
-      margin-top: 0;
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
-    .notice {
-      padding: 13px 15px;
-      border-radius: 8px;
-      margin: 14px 0;
-      border: 1px solid var(--border);
-      background: #f7fafc;
-    }
-
-    .notice.warning {
-      background: var(--warning-bg);
-      border-color: #f0d28a;
-      color: var(--warning);
-    }
-
-    .notice.danger {
-      background: var(--danger-bg);
-      border-color: #efb6b0;
-      color: var(--danger);
-    }
-
-    .notice.success {
-      background: var(--success-bg);
-      border-color: #b7e0c5;
-      color: var(--success);
-    }
-
-    .field {
-      margin: 15px 0;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 6px;
-    }
-
-    input[type="email"],
-    input[type="text"],
-    input[type="number"],
-    select,
-    textarea {
-      width: 100%;
-      padding: 11px 12px;
-      border: 1px solid #bdcbd6;
-      border-radius: 7px;
-      font: inherit;
-      background: white;
-      color: var(--text);
-    }
-
-    input[type="radio"],
-    input[type="checkbox"] {
-      margin-left: 7px;
-      accent-color: var(--primary-light);
-    }
-
-    button {
-      border: 0;
-      border-radius: 7px;
-      padding: 11px 18px;
-      font: inherit;
-      font-weight: bold;
-      cursor: pointer;
-      background: var(--primary);
-      color: white;
-      margin: 5px 3px;
-    }
-
-    button:hover {
-      background: var(--primary-light);
-    }
-
-    button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    button.secondary {
-      background: #e8eef3;
-      color: var(--primary);
-    }
-
-    button.danger-button {
-      background: var(--danger);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .top-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 15px;
-    }
-
-    .question {
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 16px;
-      margin: 14px 0;
-      background: #fff;
-    }
-
-    .question-title {
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    .answer-option {
-      display: block;
-      padding: 5px 0;
-      font-weight: normal;
-      cursor: pointer;
-    }
-
-    .critical-alert {
-      margin-top: 12px;
-      padding: 12px;
-      border: 1px solid #e7a39c;
-      border-radius: 8px;
-      background: var(--danger-bg);
-      color: var(--danger);
-      font-weight: bold;
-    }
-
-    .progress-track {
-      height: 10px;
-      background: #e5ebf0;
-      border-radius: 20px;
-      overflow: hidden;
-      margin: 12px 0;
-    }
-
-    .progress-bar {
-      height: 100%;
-      width: 0;
-      background: #287a9f;
-      transition: width 0.2s ease;
-    }
-
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 720px;
-    }
-
-    th, td {
-      padding: 12px;
-      border: 1px solid var(--border);
-      text-align: right;
-      vertical-align: top;
-    }
-
-    th {
-      background: #edf3f7;
-      color: var(--primary);
-    }
-
-    .flagged {
-      color: var(--danger);
-      background: var(--danger-bg);
-      font-weight: bold;
-    }
-
-    .not-flagged {
-      color: var(--success);
-      background: var(--success-bg);
-    }
-
-    .status-text {
-      margin: 10px 0;
-      white-space: pre-wrap;
-    }
-
-    footer {
-      text-align: center;
-      padding: 18px;
-      color: var(--muted);
-      font-size: 0.85rem;
-    }
-
-    @media (max-width: 600px) {
-      .panel, .card {
-        padding: 15px;
-      }
-
-      header h1 {
-        font-size: 1.25rem;
-      }
-
-      button {
-        max-width: 100%;
-      }
-    }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#315c68">
+  <meta name="description" content="منصة تقييم الصحة النفسية المهنية للعاملين بمواقع إنتاج البترول">
+  <title>FieldMind | تقييم الصحة النفسية المهنية</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
 </head>
-
 <body>
-  <header>
-    <h1>نظام التقييم المتكامل للصحة النفسية المهنية</h1>
-    <p>FieldMind Assessment — COPHAS-1.0-DRAFT</p>
+  <header class="topbar">
+    <div class="brand-mark" aria-hidden="true">FM</div>
+    <div>
+      <h1>FieldMind</h1>
+      <p>تقييم الصحة النفسية المهنية</p>
+    </div>
+    <span class="secure-label">بوابة آمنة</span>
   </header>
 
-  <main>
-    <!-- تسجيل الدخول -->
+  <main class="container">
+    <section class="intro panel">
+      <p class="eyebrow">الصحة المهنية · مواقع إنتاج البترول</p>
+      <h2>تقييمك يبدأ بخطوة واعية</h2>
+      <p>أجب عن الأسئلة بهدوء وصدق. هذا التقييم أداة فرز أولي، وليس تشخيصًا طبيًا أو قرارًا منفردًا بشأن اللياقة للعمل.</p>
+    </section>
+
     <section id="auth-panel" class="panel">
-      <h2>تسجيل الدخول</h2>
-
-      <p class="muted">
-        أدخل بريدك الإلكتروني لتلقي رابط تسجيل الدخول.
-      </p>
-
-      <div class="field">
+      <h2>الدخول بالبريد الإلكتروني</h2>
+      <p class="muted">أدخل بريدك الإلكتروني المسجل لاستلام رابط تحقق آمن.</p>
+      <form id="login-form">
         <label for="email">البريد الإلكتروني</label>
-        <input
-          id="email"
-          type="email"
-          autocomplete="email"
-          placeholder="name@example.com"
-          required
-        >
-      </div>
-
-      <button id="login-button" type="button">
-        إرسال رابط تسجيل الدخول
-      </button>
-
-      <p id="auth-message" class="status-text" role="status" aria-live="polite"></p>
+        <input id="email" name="email" type="email" autocomplete="email" required placeholder="name@example.com">
+        <button type="submit" id="login-button">إرسال رابط الدخول</button>
+      </form>
+      <p id="auth-message" class="message" role="status"></p>
     </section>
 
-    <!-- التطبيق الرئيسي -->
     <section id="app-panel" class="panel hidden">
-      <div class="top-actions">
-        <div>
-          <h2 style="margin-bottom: 0;">التقييم النفسي المهني</h2>
-          <span id="user-info" class="muted"></span>
-        </div>
-
-        <div>
-          <button id="admin-button" type="button" class="secondary hidden">
-            لوحة الإدارة
-          </button>
-          <button id="logout-button" type="button" class="secondary">
-            تسجيل الخروج
-          </button>
-        </div>
+      <div class="account-row">
+        <div><span class="muted">تم تسجيل الدخول باسم</span><strong id="current-email"></strong></div>
+        <button id="logout-button" class="secondary" type="button">تسجيل الخروج</button>
       </div>
-
-      <div class="notice warning">
-        <strong>تنبيه مهم:</strong>
-        هذا النظام في مرحلة المعاينة الفنية والتحقق الأولي.
-        النتائج استكشافية وغير معتمدة للتشخيص النفسي أو لاتخاذ قرار
-        اللياقة الطبية للعمل. لا تُستخدم النتائج وحدها في قرارات التوظيف
-        أو الاستبعاد الوظيفي.
+      <div id="admin-banner" class="notice hidden">تم التعرف على حساب إداري. ستظهر السجلات الإدارية بعد إعداد صلاحيات قاعدة البيانات.</div>
+      <div id="start-view">
+        <h2>قبل أن تبدأ</h2>
+        <ul class="plain-list">
+          <li>خصص عدة دقائق للإجابة دون مقاطعة قدر الإمكان.</li>
+          <li>يمكنك إيقاف التقييم قبل إرساله.</li>
+          <li>تُحفظ النتيجة في سجل خاص بحسابك وفق صلاحيات النظام.</li>
+        </ul>
+        <label class="consent"><input id="consent" type="checkbox"> أوافق على إجراء التقييم ومعالجة إجاباتي وفق إشعار الخصوصية المعتمد.</label>
+        <button id="begin-button" type="button" disabled>بدء التقييم التجريبي</button>
+        <p class="small muted">تنبيه: الأسئلة الحالية تجريبية فقط، ويجب استبدالها بمقياسك المعتمد قبل أي استخدام فعلي.</p>
       </div>
-
-      <section id="consent-section" class="card">
-        <h3>الموافقة والمعلومات</h3>
-
-        <p>
-          يُرجى قراءة المعلومات التالية قبل بدء الإجابة.
-          تُستخدم الإجابات لأغراض التقييم الأولي وفق سياسات المؤسسة
-          وإجراءات السرية المعتمدة.
-        </p>
-
-        <p class="muted">
-          يجب تحديد من يحق له الاطلاع على البيانات، وكيفية حفظها،
-          ومن يتولى المراجعة البشرية عند الحاجة.
-        </p>
-
-        <label class="answer-option">
-          <input id="consent-checkbox" type="checkbox">
-          أقر بأنني قرأت المعلومات السابقة وأوافق على متابعة التقييم.
-        </label>
-
-        <button id="start-button" type="button">
-          بدء التقييم
-        </button>
-
-        <p id="consent-message" class="status-text" role="status"></p>
-      </section>
-
-      <section id="questionnaire-section" class="card hidden">
-        <div class="top-actions">
-          <h3 id="section-title">أسئلة التقييم</h3>
-          <span id="progress-text" class="muted"></span>
+      <form id="assessment-form" class="hidden">
+        <div class="progress-row"><span id="progress-label">السؤال 1</span><span id="progress-count"></span></div>
+        <div class="progress-track"><div id="progress-bar"></div></div>
+        <div id="questions-container"></div>
+        <div class="form-actions">
+          <button type="button" id="previous-button" class="secondary">السابق</button>
+          <button type="button" id="next-button">التالي</button>
+          <button type="submit" id="submit-assessment-button" class="hidden">إرسال التقييم</button>
         </div>
-
-        <div class="progress-track" aria-label="تقدم التقييم">
-          <div id="progress-bar" class="progress-bar"></div>
-        </div>
-
-        <div id="question-container"></div>
-
-        <p id="question-message" class="status-text" role="status" aria-live="polite"></p>
-
-        <div class="top-actions">
-          <button id="prev-button" type="button" class="secondary">
-            السابق
-          </button>
-          <button id="next-button" type="button">
-            التالي
-          </button>
-          <button id="submit-button" type="button" class="hidden">
-            حفظ التقييم وعرض المعاينة
-          </button>
-        </div>
-      </section>
-
-      <section id="result-section" class="card hidden">
-        <h3>نتيجة المعاينة الأولية</h3>
-
-        <div class="notice warning">
-          النتائج التالية حسابية أولية فقط، وليست تشخيصًا طبيًا،
-          ولا تمثل احتمال الإصابة باضطراب نفسي أو نسبة اللياقة للعمل.
-          لم يتم اعتماد أداة التصنيف سريريًا.
-        </div>
-
-        <div id="result-container"></div>
-
-        <p id="result-message" class="status-text" role="status" aria-live="polite"></p>
-
-        <button id="new-assessment-button" type="button" class="secondary">
-          بدء تقييم جديد
-        </button>
+        <p id="form-message" class="message" role="status"></p>
+      </form>
+      <section id="result-view" class="hidden">
+        <h2>تم تسجيل التقييم</h2>
+        <p id="result-summary"></p>
+        <p class="notice">تم حساب الدرجات المعيارية الأولية للمجالات وحفظها بنجاح. ..</p>
+        <button id="new-assessment-button" type="button" class="secondary">العودة إلى الصفحة الرئيسية</button>
       </section>
     </section>
 
-    <!-- لوحة الإدارة -->
     <section id="admin-panel" class="panel hidden">
-      <div class="top-actions">
-        <div>
-          <h2 style="margin-bottom: 0;">لوحة الإدارة</h2>
-          <p class="muted">
-            متابعة سجلات التقييم والتنبيهات التي تحتاج إلى مراجعة بشرية.
-          </p>
-        </div>
-
-        <div>
-          <button id="refresh-admin-button" type="button">
-            تحديث السجلات
-          </button>
-          <button id="back-to-app-button" type="button" class="secondary">
-            العودة للتقييم
-          </button>
-        </div>
+      <div class="section-heading">
+        <div><p class="eyebrow">صلاحيات إدارية</p><h2>سجلات التقييم</h2></div>
+        <button id="refresh-admin-button" type="button" class="secondary">تحديث السجلات</button>
       </div>
-
-      <div class="notice danger">
-        <strong>الخصوصية وسلامة المراجعة:</strong>
-        يجب أن يقتصر الاطلاع على الإجابات الحساسة على الأشخاص المخولين.
-        ظهور التنبيه لا يعني إتمام المراجعة أو تأكيد وجود حالة مرضية.
-        يجب اتباع بروتوكول المؤسسة للاستجابة الآمنة والسرية.
-      </div>
-
-      <p id="admin-message" class="status-text" role="status" aria-live="polite">
-        تُحمّل السجلات عند فتح لوحة الإدارة.
-      </p>
-
+      <p class="muted small">تُعرض السجلات التي تسمح بها سياسات قاعدة البيانات للحساب الإداري فقط. تجنب تصدير البيانات الحساسة إلا وفق سياسة الشركة.</p>
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>التاريخ</th>
-              <th>معرّف المستخدم</th>
-              <th>حالة التقييم</th>
-              <th>التنبيهات التي تستلزم المراجعة</th>
-            </tr>
-          </thead>
-          <tbody id="admin-records">
-            <tr>
-              <td colspan="4">لا توجد سجلات محمّلة حاليًا.</td>
-            </tr>
-          </tbody>
+          <thead><tr><th>تاريخ التقييم</th><th>معرّف المستخدم</th><th>حالة السجل</th></tr></thead>
+          <tbody id="admin-records"><tr><td colspan="3">لا توجد بيانات محملة.</td></tr></tbody>
         </table>
       </div>
-
-      <p class="muted">
-        تعرض هذه اللوحة السجلات المتاحة للمستخدم الإداري المسجّل دخوله.
-        وهي لا ترسل إشعارات خارج الموقع.
-      </p>
+      <p id="admin-message" class="message" role="status"></p>
     </section>
   </main>
 
-  <footer>
-    COPHAS-1.0-DRAFT — معاينة فنية أولية، غير معتمدة للتشخيص أو قرارات اللياقة المهنية.
-  </footer>
+  <footer><p>FieldMind · نسخة تأسيسية غير مخصصة للاستخدام السريري قبل اعتماد المقياس والتحقق من الأمان والحوكمة.</p></footer>
 
-  <!-- ترتيب تحميل الملفات مهم -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase.js"></script>
-  <script src="./assessment-config.js"></script>
-  <script src="./scoring-engine.js"></script>
-  <script src="./app.js"></script>
+<script src="./supabase.js"></script>
+<script src="./assessment-config.js"></script>
+<script src="./scoring-engine.js"></script>
+<script src="./app.js"></script>
 </body>
 </html>
