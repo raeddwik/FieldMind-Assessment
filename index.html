@@ -109,6 +109,57 @@
 
   <p id="admin-message" class="message" role="status"></p>
 
+  <section id="results-dashboard" class="hidden" aria-labelledby="results-title">
+    <hr>
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">لوحة محمية</p>
+        <h3 id="results-title">تحليل نتائج التقييمات</h3>
+      </div>
+      <button id="refresh-results-button" type="button" class="secondary">تحديث النتائج</button>
+    </div>
+    <p class="muted small">هذه النتائج أولية، ولا تمثل تشخيصًا أو قرارًا منفردًا بشأن اللياقة للعمل.</p>
+    <div class="form-actions">
+      <label>من تاريخ <input id="results-from" type="date"></label>
+      <label>إلى تاريخ <input id="results-to" type="date"></label>
+      <label>إصدار المقياس
+        <select id="results-version"><option value="">كل الإصدارات</option></select>
+      </label>
+      <label>حالة النتيجة
+        <select id="results-status"><option value="">كل الحالات</option></select>
+      </label>
+      <button id="apply-results-filters" type="button">تطبيق الفلاتر</button>
+      <button id="export-results-button" type="button" class="secondary">تصدير النتائج CSV</button>
+    </div>
+    <p id="results-message" class="message" role="status" aria-live="polite"></p>
+    <div class="dashboard-stats">
+      <article class="panel"><p class="muted">عدد التقييمات</p><strong id="results-total">—</strong></article>
+      <article class="panel"><p class="muted">المستخدمون الفريدون</p><strong id="results-users-total">—</strong></article>
+      <article class="panel"><p class="muted">إصدارات المقياس</p><strong id="results-versions-total">—</strong></article>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>تاريخ التقييم</th>
+            <th>معرّف المستخدم</th>
+            <th>إصدار المقياس</th>
+            <th>حالة النتيجة</th>
+            <th>الدرجات حسب المجال</th>
+          </tr>
+        </thead>
+        <tbody id="results-rows">
+          <tr><td colspan="5">اضغط «تحديث النتائج» للتحميل.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="form-actions">
+      <button id="results-prev" type="button" class="secondary" disabled>السابق</button>
+      <span id="results-page-label" class="muted small">الصفحة 1</span>
+      <button id="results-next" type="button" class="secondary" disabled>التالي</button>
+    </div>
+  </section>
+
   <hr>
 
   <div class="section-heading">
