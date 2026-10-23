@@ -3,9 +3,10 @@
  * FieldMind — Preliminary Scoring Engine
  * COPHAS-1.0-DRAFT
  *
- * Mathematical normalization and validation only.
+ * Technical preview only.
+ * Preliminary mathematical normalization and validation.
  * NOT a validated clinical scoring system.
- * No clinical classification or diagnosis.
+ * No diagnosis, clinical classification, or fitness-for-work decision.
  */
 
 (function () {
@@ -13,8 +14,7 @@
 
   const CRITICAL_DOMAIN = "critical_indicators";
 
-  // No reverse-scored items are assumed.
-  // Add item IDs here only after verifying the original scoring key.
+  // Do not assume reverse scoring without a verified scoring key.
   const REVERSE_ITEMS = new Set([]);
 
   function getConfiguration() {
@@ -22,6 +22,21 @@
 
     if (!config || !Array.isArray(config.items)) {
       throw new Error("Assessment configuration is unavailable.");
+    }
+
+    if (!Array.isArray(config.domains)) {
+      throw new Error("Assessment domains are unavailable.");
+    }
+
+    if (!config.responseScales || typeof config.responseScales !== "object") {
+      throw new Error("Response scales are unavailable.");
+    }
+
+    // Clinical scoring must remain disabled during this preview.
+    if (config.scoring?.enabled !== false) {
+      throw new Error(
+        "Technical preview requires scoring.enabled to be false."
+      );
     }
 
     return config;
@@ -34,8 +49,16 @@
 
     const values = scale.map(option => option.value);
 
-    if (!values.every(Number.isFinite)) {
+    if (
+      !values.every(
+        value => typeof value === "number" && Number.isFinite(value)
+      )
+    ) {
       throw new Error("Response scale contains invalid values.");
+    }
+
+    if (new Set(values).size !== values.length) {
+      throw new Error("Response scale contains duplicate values.");
     }
 
     return {
@@ -57,29 +80,59 @@
     }
 
     const itemIds = new Set();
+    const domainIds = new Set();
+    const errors = [];
+
+    for (const domain of config.domains) {
+      if (!domain.id || domainIds.has(domain.id)) {
+        throw new Error("Missing or duplicate domain ID.");
+      }
+
+      domainIds.add(domain.id);
+    }
 
     for (const item of config.items) {
-      if (itemIds.has(item.id)) {
-        throw new Error("Duplicate item ID: " + item.id);
+      if (!item.id || itemIds.has(item.id)) {
+        throw new Error("Missing or duplicate item ID.");
       }
 
       itemIds.add(item.id);
+
+      if (!domainIds.has(item.domain)) {
+        errors.push(
+          "Item references an unknown domain: " + item.id
+        );
+      }
     }
 
-    const errors = [];
+    if (errors.length > 0) {
+      return {
+        status: "invalid_or_incomplete",
+        errors
+      };
+    }
+
     const normalizedAnswers = {};
     const scales = {};
 
-    // Validate every configured item before calculating anything.
+    // Validate every configured item before calculating scores.
     for (const item of config.items) {
-      const scale = config.responseScales?.[item.responseScale];
+      const scale = config.responseScales[item.responseScale];
 
       if (!scale) {
         errors.push("Missing response scale: " + item.id);
         continue;
       }
 
-      const bounds = getScaleBounds(scale);
+      let bounds;
+
+      try {
+        bounds = getScaleBounds(scale);
+      } catch (error) {
+        errors.push(item.id + ": " + error.message);
+        continue;
+      }
+
       scales[item.id] = bounds;
 
       if (!Object.prototype.hasOwnProperty.call(answers, item.id)) {
@@ -113,8 +166,9 @@
     const domainResults = {};
 
     for (const domain of config.domains) {
-      // Critical indicators are handled separately below.
-      if (domain.id === CRITICAL_DOMAIN) continue;
+      if (domain.id === CRITICAL_DOMAIN) {
+        continue;
+      }
 
       const items = config.items.filter(
         item => item.domain === domain.id
@@ -123,8 +177,13 @@
       if (items.length === 0) {
         domainResults[domain.id] = {
           title: domain.title,
-          status: "no_items"
+          scoreDirection: domain.scoreDirection || "not_specified",
+          scoreMeaning: domain.scoreMeaning || null,
+          status: "no_items",
+          interpretation: "not_assigned",
+          scoringValidated: false
         };
+
         continue;
       }
 
@@ -145,8 +204,13 @@
       if (range <= 0) {
         domainResults[domain.id] = {
           title: domain.title,
-          status: "invalid_scale"
+          scoreDirection: domain.scoreDirection || "not_specified",
+          scoreMeaning: domain.scoreMeaning || null,
+          status: "invalid_scale",
+          interpretation: "not_assigned",
+          scoringValidated: false
         };
+
         continue;
       }
 
@@ -155,6 +219,8 @@
       domainResults[domain.id] = {
         title: domain.title,
         score: Math.round(score * 100) / 100,
+        scoreDirection: domain.scoreDirection || "not_specified",
+        scoreMeaning: domain.scoreMeaning || null,
         answeredItems: items.length,
         status: "preliminary_normalized_score",
         interpretation: "not_assigned",
@@ -162,6 +228,8 @@
       };
     }
 
+    // Critical indicators are counted separately.
+    // This count is NOT a clinical risk classification.
     const criticalItems = config.items.filter(
       item => item.domain === CRITICAL_DOMAIN
     );
@@ -183,7 +251,8 @@
       overallClinicalScore: null,
       classification: null,
       recommendations: null,
-      clinicalValidation: "not_established"
+      clinicalValidation: "not_established",
+      previewOnly: true
     };
   }
 
