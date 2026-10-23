@@ -129,8 +129,22 @@ const payload = {
     $("assessment-form").classList.add("hidden");
     $("start-view").classList.add("hidden");
     $("result-view").classList.remove("hidden");
-    $("result-summary").textContent = "تم حفظ إجاباتك بنجاح. لم يتم إصدار تصنيف نفسي في هذه النسخة التجريبية، لأن أسئلة المقياس الخاص ومعادلاته وحدود تصنيفه لم تُضف بعد.";
-    if (isAdmin) loadAdminRecords();
+const domainResults = calculationResult.domains || {};
+
+const scoreLines = Object.entries(domainResults)
+  .map(([id, domain]) =>
+    `${domain.title}: ${
+      typeof domain.score === "number"
+        ? domain.score.toFixed(2) + "%"
+        : "غير متاح"
+    }`
+  )
+  .join("\n");
+
+$("result-summary").textContent =
+  "تم حفظ إجاباتك وحساب الدرجات الأولية بنجاح.\n\n" +
+  scoreLines +
+  "\n\nهذه درجات معيارية أولية وليست تشخيصًا نفسيًا أو تصنيفًا سريريًا.";    if (isAdmin) loadAdminRecords();
   }
   async function loadAdminRecords() {
     if (!isAdmin || !db()) return;
