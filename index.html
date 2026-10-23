@@ -74,21 +74,79 @@
       </section>
     </section>
 
-    <section id="admin-panel" class="panel hidden">
-      <div class="section-heading">
-        <div><p class="eyebrow">صلاحيات إدارية</p><h2>سجلات التقييم</h2></div>
-        <button id="refresh-admin-button" type="button" class="secondary">تحديث السجلات</button>
-      </div>
-      <p class="muted small">تُعرض السجلات التي تسمح بها سياسات قاعدة البيانات للحساب الإداري فقط. تجنب تصدير البيانات الحساسة إلا وفق سياسة الشركة.</p>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>تاريخ التقييم</th><th>معرّف المستخدم</th><th>حالة السجل</th></tr></thead>
-          <tbody id="admin-records"><tr><td colspan="3">لا توجد بيانات محملة.</td></tr></tbody>
-        </table>
-      </div>
-      <p id="admin-message" class="message" role="status"></p>
-    </section>
-  </main>
+    
+<section id="admin-panel" class="panel hidden">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">صلاحيات إدارية</p>
+      <h2>لوحة الإدارة</h2>
+    </div>
+    <button id="refresh-admin-button" type="button" class="secondary">
+      تحديث السجلات
+    </button>
+  </div>
+
+  <h3>سجلات التقييم</h3>
+  <p class="muted small">
+    تُعرض السجلات التي تسمح بها سياسات قاعدة البيانات للحساب الإداري فقط.
+    تجنب تصدير البيانات الحساسة إلا وفق سياسة الشركة.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>تاريخ التقييم</th>
+          <th>معرّف المستخدم</th>
+          <th>حالة السجل</th>
+        </tr>
+      </thead>
+      <tbody id="admin-records">
+        <tr><td colspan="3">لا توجد بيانات محملة.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p id="admin-message" class="message" role="status"></p>
+
+  <hr>
+
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">إدارة الحسابات</p>
+      <h3>المستخدمون والصلاحيات</h3>
+    </div>
+    <button id="refresh-users-button" type="button" class="secondary">
+      تحديث المستخدمين
+    </button>
+  </div>
+
+  <p class="muted small">
+    يمكنك عرض حسابات المستخدمين وتعديل أدوار الحسابات العادية.
+    لا يمكن تعديل حسابات Super Admin من هذه الواجهة.
+  </p>
+
+  <p id="users-message" class="message" role="status"></p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>البريد الإلكتروني</th>
+          <th>الدور الحالي</th>
+          <th>الدور الجديد</th>
+          <th>الإجراء</th>
+        </tr>
+      </thead>
+      <tbody id="admin-users">
+        <tr>
+          <td colspan="4">اضغط «تحديث المستخدمين» لتحميل الحسابات.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 
   <footer><p>FieldMind · نسخة تأسيسية غير مخصصة للاستخدام السريري قبل اعتماد المقياس والتحقق من الأمان والحوكمة.</p></footer>
 
