@@ -13,7 +13,7 @@
 
   const panels = ["auth-panel", "app-panel", "admin-panel"];
 
-  const criticalIds = new Set([
+  const criticalIds = [
     "critical_01",
     "critical_02",
     "critical_03",
@@ -22,7 +22,18 @@
     "critical_06",
     "critical_07",
     "critical_08"
-  ]);
+  ];
+
+  const criticalTitles = {
+    critical_01: "أفكار انتحارية",
+    critical_02: "أفكار لإيذاء النفس",
+    critical_03: "احتمال إيذاء شخص آخر",
+    critical_04: "إدراكات حسية غير معتادة",
+    critical_05: "تغير سلوكي حاد أو فقدان السيطرة",
+    critical_06: "تراجع شديد ومفاجئ في الأداء اليومي أو الوظيفي",
+    critical_07: "نوبة هلع شديدة تؤثر في السلوك الآمن",
+    critical_08: "خطر وشيك على النفس أو خطر من شخص آخر"
+  };
 
   function showOnly(ids) {
     panels.forEach((id) => {
@@ -84,22 +95,30 @@
 
     showOnly(["app-panel"]);
 
-    $("current-email").textContent =
-      session.user.email || "حساب موثق";
+    const emailElement = $("current-email");
+    if (emailElement) {
+      emailElement.textContent =
+        session.user.email || "حساب موثق";
+    }
 
     isAdmin = await checkAdmin();
 
-    $("admin-banner").classList.toggle("hidden", !isAdmin);
+    const adminBanner = $("admin-banner");
+    if (adminBanner) {
+      adminBanner.classList.toggle("hidden", !isAdmin);
+    }
+
+    const adminPanel = $("admin-panel");
+    if (adminPanel) {
+      adminPanel.classList.toggle("hidden", !isAdmin);
+    }
 
     if (isAdmin) {
-      $("admin-panel").classList.remove("hidden");
-      loadAdminRecords();
-    } else {
-      $("admin-panel").classList.add("hidden");
+      await loadAdminRecords();
     }
   }
 
-  // تحديث التنبيه الخاص بالأسئلة الحرجة.
+  // تحديث تنبيه الأسئلة الحرجة أثناء الإجابة.
   function updateCriticalAlert(item) {
     const alert = $("critical-alert");
     if (!alert) return;
@@ -108,7 +127,7 @@
       'input[name="answer"]:checked'
     );
 
-    const isCritical = criticalIds.has(item.id);
+    const isCritical = criticalIds.includes(item.id);
     const isYes = picked && Number(picked.value) === 1;
 
     alert.style.display =
@@ -116,7 +135,27 @@
   }
 
   function renderQuestion() {
+    if (!config || !Array.isArray(config.items)) {
+      console.error("Assessment configuration is unavailable.");
+      message(
+        "form-message",
+        "تعذر تحميل الأسئلة. يرجى تحديث الصفحة أو مراجعة إعدادات النظام.",
+        true
+      );
+      return;
+    }
+
     const item = config.items[currentQuestion];
+
+    if (!item) {
+      message(
+        "form-message",
+        "تعذر العثور على السؤال المطلوب.",
+        true
+      );
+      return;
+    }
+
     const selected = answers[item.id];
 
     $("progress-label").textContent =
@@ -160,30 +199,29 @@
         role="alert"
         aria-live="assertive"
         style="
-          display: none;
-          margin-top: 16px;
-          padding: 14px;
-          border: 1px solid #b42318;
-          border-radius: 8px;
-          background: #fff1f0;
-          color: #8a1c13;
-          line-height: 1.8;
+          display:none;
+          margin-top:16px;
+          padding:14px;
+          border:1px solid #b42318;
+          border-radius:8px;
+          background:#fff1f0;
+          color:#8a1c13;
+          line-height:1.8;
         "
       >
         <strong>تنبيه مهم — يلزم الانتباه لهذه الإجابة</strong>
         <p>
-          تستلزم هذه الإجابة مراجعة بشرية سرية من مختص مؤهل،
-          وفق إجراءات المؤسسة المعتمدة.
+          تستلزم هذه الإجابة مراجعة بشرية سرية من مختص مؤهل
+          وفق الإجراءات المعتمدة.
         </p>
         <p>
           إذا كان هناك خطر فوري على سلامتك أو سلامة شخص آخر،
-          فاطلب المساعدة الطارئة المحلية فورًا، ولا تعتمد على
+          فاطلب المساعدة الطارئة المحلية فورًا. لا تعتمد على
           هذا التنبيه وحده.
         </p>
       </div>
     `;
 
-    // إظهار التنبيه أو إخفاؤه عند تغيير الإجابة.
     $("questions-container")
       .querySelectorAll('input[name="answer"]')
       .forEach((input) => {
@@ -192,7 +230,6 @@
         });
       });
 
-    // إذا عُدنا إلى سؤال سابق، نعيد فحص الإجابة المحفوظة.
     updateCriticalAlert(item);
 
     $("previous-button").disabled = currentQuestion === 0;
@@ -257,103 +294,99 @@
     }
 
     $("submit-assessment-button").disabled = true;
-
-    message("form-message", "جارٍ حفظ التقييم...");
-
-    const scoringEngine = window.FIELD_MIND_SCORING_ENGINE;
-
-    if (
-      !scoringEngine ||
-      typeof scoringEngine.calculate !== "function"
-    ) {
-      $("submit-assessment-button").disabled = false;
-
-      return message(
-        "form-message",
-        "محرك الحساب غير متاح. يرجى تحديث الصفحة والمحاولة مجددًا.",
-        true
-      );
-    }
-
-    let calculationResult;
+    message("form-message", "جارٍ حساب الدرجات وحفظ التقييم...");
 
     try {
-      calculationResult = scoringEngine.calculate(answers);
+      const scoringEngine = window.FIELD_MIND_SCORING_ENGINE;
+
+      if (
+        !scoringEngine ||
+        typeof scoringEngine.calculate !== "function"
+      ) {
+        message(
+          "form-message",
+          "محرك الحساب غير متاح. يرجى تحديث الصفحة والمحاولة مجددًا.",
+          true
+        );
+        return;
+      }
+
+      const calculationResult = scoringEngine.calculate(answers);
+
+      if (
+        !calculationResult ||
+        calculationResult.status !== "calculation_preview_only"
+      ) {
+        message(
+          "form-message",
+          "تعذر إكمال الحساب بسبب وجود إجابات أو إعدادات غير صالحة.",
+          true
+        );
+        return;
+      }
+
+      const payload = {
+        user_id: session.user.id,
+        scale_version: config.version,
+        answers: answers,
+        result: calculationResult,
+        consent_given: true
+      };
+
+      const { error } = await db()
+        .from("assessments")
+        .insert(payload);
+
+      if (error) {
+        console.error("Assessment save failed:", error);
+
+        message(
+          "form-message",
+          "لم نتمكن من حفظ التقييم. تحقق من إعدادات قاعدة البيانات والصلاحيات.",
+          true
+        );
+        return;
+      }
+
+      $("assessment-form").classList.add("hidden");
+      $("start-view").classList.add("hidden");
+      $("result-view").classList.remove("hidden");
+
+      const domainResults = calculationResult.domains || {};
+
+      const scoreLines = Object.values(domainResults)
+        .map((domain) => {
+          const score =
+            typeof domain.score === "number"
+              ? `${domain.score.toFixed(2)}%`
+              : "غير متاح";
+
+          return `${domain.title}: ${score}`;
+        })
+        .join("\n");
+
+      $("result-summary").textContent =
+        "تم حفظ إجاباتك وحساب الدرجات الأولية بنجاح.\n\n" +
+        scoreLines +
+        "\n\nهذه درجات معيارية أولية وليست تشخيصًا نفسيًا أو تصنيفًا سريريًا.";
+
+      if (isAdmin) {
+        await loadAdminRecords();
+      }
     } catch (error) {
-      console.error("Scoring error:", error);
+      console.error("Assessment submission failed:", error);
 
+      message(
+        "form-message",
+        "حدث خطأ غير متوقع أثناء حفظ التقييم. يرجى المحاولة مرة أخرى.",
+        true
+      );
+    } finally {
       $("submit-assessment-button").disabled = false;
-
-      return message(
-        "form-message",
-        "تعذر حساب الدرجات. يرجى مراجعة إعدادات المقياس.",
-        true
-      );
-    }
-
-    if (
-      calculationResult.status !== "calculation_preview_only"
-    ) {
-      $("submit-assessment-button").disabled = false;
-
-      return message(
-        "form-message",
-        "تعذر إكمال الحساب بسبب وجود إجابات أو إعدادات غير صالحة.",
-        true
-      );
-    }
-
-    const payload = {
-      user_id: session.user.id,
-      scale_version: config.version,
-      answers: answers,
-      result: calculationResult,
-      consent_given: true
-    };
-
-    const { error } = await db()
-      .from("assessments")
-      .insert(payload);
-
-    $("submit-assessment-button").disabled = false;
-
-    if (error) {
-      console.error("Assessment save failed:", error);
-
-      return message(
-        "form-message",
-        "لم نتمكن من حفظ التقييم. تأكد من تشغيل schema.sql وإعداد صلاحيات المستخدم.",
-        true
-      );
-    }
-
-    $("assessment-form").classList.add("hidden");
-    $("start-view").classList.add("hidden");
-    $("result-view").classList.remove("hidden");
-
-    const domainResults = calculationResult.domains || {};
-
-    const scoreLines = Object.entries(domainResults)
-      .map(([id, domain]) => {
-        const score =
-          typeof domain.score === "number"
-            ? domain.score.toFixed(2) + "%"
-            : "غير متاح";
-
-        return `${domain.title}: ${score}`;
-      })
-      .join("\n");
-
-    $("result-summary").textContent =
-      "تم حفظ إجاباتك وحساب الدرجات الأولية بنجاح.\n\n" +
-      scoreLines +
-      "\n\nهذه درجات معيارية أولية وليست تشخيصًا نفسيًا أو تصنيفًا سريريًا.";
-
-    if (isAdmin) {
-      loadAdminRecords();
     }
   }
 
+  // تحميل السجلات وإظهار التنبيهات الحرجة للطبيب المسؤول.
   async function loadAdminRecords() {
     if (!isAdmin || !db()) return;
 
@@ -361,7 +394,7 @@
 
     const { data, error } = await db()
       .from("assessments")
-      .select("id,user_id,created_at,result")
+      .select("id,user_id,created_at,answers,result")
       .order("created_at", { ascending: false })
       .limit(100);
 
@@ -369,36 +402,77 @@
       console.error("Admin records error:", error);
 
       $("admin-records").innerHTML =
-        '<tr><td colspan="3">تعذر تحميل السجلات. تحقق من صلاحيات الإدارة.</td></tr>';
+        '<tr><td colspan="4">تعذر تحميل السجلات. تحقق من صلاحيات الإدارة.</td></tr>';
 
       return message(
         "admin-message",
-        "تعذر تحميل السجلات.",
+        "تعذر تحميل السجلات. تحقق من صلاحيات قاعدة البيانات.",
         true
       );
     }
 
-    $("admin-records").innerHTML = data.length
-      ? data.map((row) => `
-          <tr>
-            <td>${escapeHtml(
+    const records = data || [];
+
+    const rows = records.map((row) => {
+      const recordAnswers = row.answers || {};
+
+      const positiveCriticalIds = criticalIds.filter(
+        (id) => Number(recordAnswers[id]) === 1
+      );
+
+      const hasCriticalAnswers =
+        positiveCriticalIds.length > 0;
+
+      const statusHtml = hasCriticalAnswers
+        ? `
+          <strong style="color:#b42318;">
+            ⚠️ يحتاج إلى مراجعة بشرية
+          </strong>
+          <div style="margin-top:8px;line-height:1.8;">
+            ${positiveCriticalIds.map((id) => `
+              <div>• ${escapeHtml(criticalTitles[id])}</div>
+            `).join("")}
+          </div>
+        `
+        : `
+          <span style="color:#287443;">
+            لا توجد إجابات إيجابية للأسئلة الحرجة المسجلة
+          </span>
+        `;
+
+      return `
+        <tr>
+          <td>
+            ${escapeHtml(
               new Date(row.created_at).toLocaleString("ar-EG")
-            )}</td>
-            <td>${escapeHtml(row.user_id)}</td>
-            <td>${escapeHtml(row.result?.status || "مسجل")}</td>
-          </tr>
-        `).join("")
-      : '<tr><td colspan="3">لا توجد سجلات حتى الآن.</td></tr>';
+            )}
+          </td>
+          <td>${escapeHtml(row.user_id)}</td>
+          <td>${escapeHtml(row.result?.status || "مسجل")}</td>
+          <td>${statusHtml}</td>
+        </tr>
+      `;
+    });
+
+    $("admin-records").innerHTML = rows.length
+      ? rows.join("")
+      : '<tr><td colspan="4">لا توجد سجلات حتى الآن.</td></tr>';
+
+    const flaggedCount = records.filter((row) =>
+      criticalIds.some(
+        (id) => Number((row.answers || {})[id]) === 1
+      )
+    ).length;
 
     message(
       "admin-message",
-      `عدد السجلات المعروضة: ${data.length}`
+      `عدد السجلات المعروضة: ${records.length} — التقييمات التي تحتاج إلى مراجعة: ${flaggedCount}`
     );
   }
 
-  // تسجيل الدخول برابط البريد الإلكتروني.
-  $("login-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
+  // تسجيل الدخول.
+  $("login-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
 
     if (!db()) {
       return message(
@@ -432,7 +506,7 @@
 
       message(
         "auth-message",
-        "حدث خطأ أثناء محاولة تسجيل الدخول. يرجى المحاولة مرة أخرى.",
+        "حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.",
         true
       );
     } finally {
@@ -442,8 +516,12 @@
 
   // تسجيل الخروج.
   $("logout-button").addEventListener("click", async () => {
-    if (db()) {
-      await db().auth.signOut();
+    try {
+      if (db()) {
+        await db().auth.signOut();
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
     }
 
     setLoggedOut();
@@ -467,7 +545,7 @@
     renderQuestion();
   });
 
-  // الانتقال إلى السؤال السابق.
+  // السؤال السابق.
   $("previous-button").addEventListener("click", () => {
     saveCurrentAnswer();
 
@@ -476,7 +554,7 @@
     renderQuestion();
   });
 
-  // الانتقال إلى السؤال التالي.
+  // السؤال التالي.
   $("next-button").addEventListener("click", () => {
     if (!saveCurrentAnswer()) {
       return message(
@@ -499,18 +577,17 @@
     submitAssessment
   );
 
-  // بدء تقييم جديد.
+  // تقييم جديد.
   $("new-assessment-button").addEventListener("click", () => {
     $("result-view").classList.add("hidden");
     $("assessment-form").classList.add("hidden");
-
     $("start-view").classList.remove("hidden");
 
     $("consent").checked = false;
     $("begin-button").disabled = true;
   });
 
-  // تحديث سجلات لوحة الإدارة.
+  // تحديث لوحة الإدارة.
   $("refresh-admin-button").addEventListener(
     "click",
     loadAdminRecords
@@ -531,7 +608,6 @@
       });
 
     db().auth.onAuthStateChange((_event, nextSession) => {
-      // تأجيل العمليات لتجنب تعطيل رد نداء المصادقة.
       setTimeout(() => {
         setLoggedIn(nextSession);
       }, 0);
