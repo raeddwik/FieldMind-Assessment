@@ -254,11 +254,49 @@
       .filter(item => normalizedAnswers[item.id] === 1)
       .map(item => item.id);
 
+    // Experimental OPRI calculation follows the draft formula in the author's
+    // questionnaire. Red Flags % is provisionally defined as positive yes/no
+    // critical items / all configured yes/no critical items * 100.
+    // This convention and all weights remain unvalidated; no cutoffs are applied.
+    const domainScore = id => domainResults[id]?.score;
+    const domainRiskScore = id =>
+      POSITIVE_RESOURCE_DOMAINS.has(id)
+        ? domainResults[id]?.riskOrientedScore
+        : domainResults[id]?.score;
+
+    const requiredIndexDomains = [
+      "depression", "anxiety", "burnout", "sleep_fatigue",
+      "psychosocial_stress", "functional_impact",
+      "positive_mental_health", "psychological_safety"
+    ];
+    const indexInputsAvailable = requiredIndexDomains.every(
+      id => Number.isFinite(domainRiskScore(id))
+    ) && criticalItems.length > 0;
+
+    let experimentalOPRI = null;
+    let redFlagsPercentage = null;
+
+    if (indexInputsAvailable) {
+      redFlagsPercentage =
+        Math.round((positiveCriticalItems.length / criticalItems.length) * 10000) / 100;
+      experimentalOPRI = Math.round((
+        domainScore("depression") * 1.2 +
+        domainScore("anxiety") * 1.0 +
+        domainScore("burnout") * 1.3 +
+        domainScore("sleep_fatigue") * 1.1 +
+        domainScore("psychosocial_stress") * 1.0 +
+        domainScore("functional_impact") * 1.5 +
+        redFlagsPercentage * 2.0 -
+        domainRiskScore("positive_mental_health") * 0.8 -
+        domainRiskScore("psychological_safety") * 0.8
+      ) * 100) / 100;
+    }
+
     return {
       status: "calculation_preview_only",
       scoringMethod: {
         domainNormalization: "((observed total - minimum possible total) / (maximum possible total - minimum possible total)) * 100; with the adopted 0–4 scale this equals observed total / maximum possible total * 100",
-        interpretation: "Domain percentages are preliminary descriptive scores only. Positive-resource domains also receive a separate inverse risk-oriented score; no overall composite is calculated.",
+        interpretation: "Domain percentages are preliminary descriptive scores only. Positive-resource domains also receive a separate inverse risk-oriented score.",
         validated: false
       },
       scaleVersion: config.version,
@@ -266,8 +304,24 @@
       criticalIndicators: {
         status: "requires_review",
         positiveCount: positiveCriticalItems.length,
+        totalItems: criticalItems.length,
         positiveItemIds: positiveCriticalItems,
+        provisionalPercentage: redFlagsPercentage,
+        percentageMethod: "positive yes/no critical items / total yes/no critical items * 100; provisional convention for pilot analysis only",
         clinicalInterpretation: null
+      },
+      experimentalIndices: {
+        status: indexInputsAvailable ? "experimental_not_validated" : "not_calculated_missing_inputs",
+        opri: experimentalOPRI,
+        opriFormula: "Depression%*1.2 + Anxiety%*1.0 + Burnout%*1.3 + Sleep/Fatigue%*1.1 + PsychosocialStress%*1.0 + FunctionalImpact%*1.5 + RedFlags%*2.0 - PositiveMentalHealth%*0.8 - PsychologicalSafety%*0.8",
+        opriMeaning: "مؤشر بحثي تجريبي وفق أوزان المسودة؛ لا توجد حدود تفسيرية معتمدة ولا يجوز استخدامه لتشخيص أو قرار وظيفي.",
+        assumptions: [
+          "Red Flags % حُسبت مؤقتًا كنسبة الإجابات الإيجابية من أسئلة نعم/لا الحرجة الثمانية.",
+          "لم تُضف درجة الرضا الوظيفي إلى OPRI لأن معادلة المسودة لا تذكرها.",
+          "لم يُحسب OPF لأن تعريف GOMHI الذي تعتمد عليه معادلته غير محدد بوضوح في المسودة."
+        ],
+        validated: false,
+        classificationEnabled: false
       },
       overallClinicalScore: null,
       classification: null,
