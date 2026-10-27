@@ -733,6 +733,81 @@ $("apply-results-filters")?.addEventListener(
   "click",
   renderFilteredDashboard
 );
+  // تصدير النتائج الظاهرة بعد تطبيق الفلاتر إلى CSV.
+$("export-results-button")?.addEventListener("click", () => {
+  if (!isSuperAdmin) {
+    message("results-message", "ليست لديك صلاحية تصدير النتائج.", true);
+    return;
+  }
+
+  if (!visibleDashboardRows.length) {
+    message("results-message", "لا توجد نتائج لتصديرها.", true);
+    return;
+  }
+
+  const headers = [
+    "تاريخ التقييم",
+    "معرف المستخدم",
+    "إصدار المقياس",
+    "حالة النتيجة",
+    "الدرجات حسب المجال"
+  ];
+
+  const csvCell = (value) => {
+    let text = String(value ?? "");
+
+    // منع تفسير القيم النصية غير الموثوقة كصيغ داخل Excel.
+    if (/^[\s]*[=+\-@]/.test(text)) {
+      text = "'" + text;
+    }
+
+    return '"' + text.replace(/"/g, '""') + '"';
+  };
+
+  const rows = visibleDashboardRows.map((row) => {
+    const domains = row.result?.domains;
+    const domainsText =
+      domains && typeof domains === "object"
+        ? Object.entries(domains)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join("؛ ")
+        : "لا توجد درجات مسجلة";
+
+    return [
+      row.created_at
+        ? new Date(row.created_at).toLocaleString("ar-EG")
+        : "",
+      row.user_id || "",
+      row.scale_version || "",
+      row.result?.status || "",
+      domainsText
+    ];
+  });
+
+  const csv = "\uFEFF" + [
+    headers.map(csvCell).join(","),
+    ...rows.map((row) => row.map(csvCell).join(","))
+  ].join("\r\n");
+
+  const blob = new Blob([csv], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "FieldMind-results.csv";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+
+  message(
+    "results-message",
+    `تم تجهيز ملف CSV يحتوي على ${rows.length} سجلًا.`
+  );
+});
   // التنقل بين صفحات النتائج.
 $("results-prev")?.addEventListener("click", () => {
   if (dashboardPage > 0) {
