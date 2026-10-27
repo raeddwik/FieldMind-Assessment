@@ -450,18 +450,16 @@ async function setLoggedIn(nextSession) {
       $("result-view").classList.remove("hidden");
 
       const domainResults = calculationResult.domains || {};
-
-      const positiveDomains = new Set(["psychological_safety", "positive_mental_health", "job_satisfaction"]);
       const scoreLines = Object.entries(domainResults)
-        .map(([id, domain]) => {
-          const score = typeof domain.score === "number" ? domain.score.toFixed(2) + "%" : "غير متاح";
-          if (positiveDomains.has(id)) {
-            const inverse = typeof domain.riskOrientedScore === "number" ? domain.riskOrientedScore.toFixed(2) + "%" : "غير متاح";
-            return domain.title + ": " + score + " (درجة تأييد الموارد الإيجابية؛ الأعلى يعني تأييدًا أكبر لهذه الموارد، وليس أعراضًا أكثر؛ المؤشر العكسي البحثي غير المعتمد: " + inverse + ")";
-          }
-          return domain.title + ": " + score + " (درجة وصفية للأعراض أو الصعوبات؛ الأعلى يعني تكرارًا أكبر للإجابات الدالة على الصعوبة، وليست حدًا سريريًا)";
+        .map(([, domain]) => {
+          const score = typeof domain.score === "number"
+            ? domain.score.toFixed(1) + "%"
+            : "غير متاح";
+          const interpretation = domain.scoreMeaning || "لا يتوفر تفسير وصفي لهذا المحور.";
+          return domain.title + ": " + score + ". " + interpretation;
         })
         .join("\n");
+
       const critical = calculationResult.criticalIndicators || {};
       const criticalItems = Array.isArray(config.items)
         ? config.items.filter(item => item.domain === "critical_indicators")
@@ -472,8 +470,8 @@ async function setLoggedIn(nextSession) {
       const positiveCriticalLabels = criticalItems
         .filter(item => positiveCriticalIds.includes(item.id))
         .map(item => item.text);
-      // dep_09 is a frequency-scale item about self-harm/suicidal thoughts.
-      // Treat any non-zero response as requiring human follow-up, without assigning a risk level.
+
+      // Any non-zero response to dep_09 requires separate human follow-up.
       const selfHarmItem = config.items.find(item => item.id === "dep_09");
       const selfHarmResponsePositive =
         typeof answers.dep_09 === "number" && answers.dep_09 > 0;
@@ -481,32 +479,24 @@ async function setLoggedIn(nextSession) {
           !positiveCriticalLabels.includes(selfHarmItem.text)) {
         positiveCriticalLabels.unshift(selfHarmItem.text);
       }
+
       const criticalLine =
         "مؤشرات المراجعة المنفصلة: " +
         (Number(critical.positiveCount) || 0) + " من " + criticalItems.length +
-        ". هذا العدد يخص أسئلة نعم/لا فقط، ولا يشمل بند تكرار أفكار الانتحار أو إيذاء النفس (dep_09)؛ " +
-        "تُراجع أي إجابة غير صفرية على هذا البند بصورة منفصلة. العدد ليس تقديرًا لمستوى الخطورة أو تصنيفًا سريريًا.";
+        " من أسئلة نعم/لا. هذا العدد ليس تقديرًا لمستوى الخطورة أو تصنيفًا سريريًا.";
 
       const criticalDetails = positiveCriticalLabels.length
-        ? "\nالإجابات التي تحتاج مراجعة بشرية:\n- " + positiveCriticalLabels.join("\n- ") +
-          "\n\nينبغي أن يراجع مختص مؤهل هذه الإجابات مباشرةً وبسرية وفق الإجراء المعتمد. " +
-          "إذا كانت الإجابة المتعلقة بالانتحار أو إيذاء النفس تعكس خطرًا فوريًا حاليًا، فاطلب مساعدة طبية طارئة أو تواصل فورًا مع خدمات الطوارئ المحلية."
-        : "\nلم تُسجّل إجابات إيجابية على مؤشرات نعم/لا أو إجابة غير صفرية على بند تكرار إيذاء النفس. " +
-          "هذا لا يستبعد وجود ضيق نفسي أو حاجة إلى الدعم، ولا يغني عن التقييم السريري عند الحاجة.";
-
-      const experimentalIndices = calculationResult.experimentalIndices || {};
-      const opriLine = Number.isFinite(experimentalIndices.opri)
-        ? "\n\nمؤشر OPRI التجريبي غير المعتمد: " +
-          experimentalIndices.opri.toFixed(2) +
-          "\nهذا رقم بحثي أولي محسوب وفق الأوزان المقترحة في مسودة المقياس. لا توجد حدود معتمدة لتفسيره، لذلك لن يُحوّل إلى مستوى منخفض/متوسط/مرتفع أو إلى قرار سريري أو وظيفي."
-        : "\n\nلم يُحسب مؤشر OPRI التجريبي بسبب نقص أحد المدخلات اللازمة.";
+        ? "\nإجابات تستلزم مراجعة مباشرة من مختص مؤهل وبسرية: " +
+          positiveCriticalLabels.join("؛ ") +
+          ". إذا كانت الإجابة المتعلقة بالانتحار أو إيذاء النفس تعكس خطرًا فوريًا حاليًا، فاطلب مساعدة طبية طارئة أو تواصل فورًا مع خدمات الطوارئ المحلية."
+        : "\nلا توجد إجابات إيجابية على مؤشرات نعم/لا، ولم تُسجّل إجابة غير صفرية على بند إيذاء النفس. هذا لا يستبعد الحاجة إلى الدعم أو التقييم عند الحاجة.";
 
       $("result-summary").textContent =
-        "تم حفظ إجاباتك وحساب الدرجات الوصفية الأولية بنجاح.\n\n" +
-        scoreLines + opriLine + "\n\n" + criticalLine + criticalDetails +
-        "\n\nهذه النتائج أداة إرشادية أولية فقط؛ لا تمثل تشخيصًا نفسيًا أو تقديرًا للتنبؤ بالخطر أو تصنيفًا للياقة للعمل. لا تستخدم وحدها لاتخاذ قرارات وظيفية.";
+        "تم حفظ إجاباتك بنجاح. فيما يلي قيمة كل محور وتفسيره الوصفي الأولي:\n\n" +
+        scoreLines + "\n\n" + criticalLine + criticalDetails +
+        "\n\nهذا التقييم أداة إرشادية أولية غير معتمدة سريريًا، ولا يمثل تشخيصًا نفسيًا أو قرارًا بشأن اللياقة للعمل، ولا ينبغي استخدامه منفردًا لاتخاذ قرارات وظيفية.";
 
-            if (isAdmin) {
+      if (isAdmin) {
         await loadAdminRecords();
       }
     } catch (error) {
