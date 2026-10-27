@@ -7,7 +7,7 @@
  */
 
 window.FIELD_MIND_ASSESSMENT = {
-  version: "COPHAS-1.0-DRAFT",
+  version: "COPHAS-1.1-DRAFT",
   title: "نظام التقييم المتكامل للصحة النفسية المهنية",
   instructions:
     "يرجى قراءة كل عبارة واختيار الإجابة التي تعبّر عن تجربتك.",
@@ -96,10 +96,11 @@ window.FIELD_MIND_ASSESSMENT = {
   ],
 
   responseScales: {
-    frequency_1_4: [
-      { label: "أبدًا (Never)", value: 1 },
-      { label: "نادرًا (Rarely)", value: 2 },
-      { label: "أحيانًا (Sometimes)", value: 3 },
+    frequency_0_4: [
+      { label: "أبدًا (Never)", value: 0 },
+      { label: "نادرًا (Rarely)", value: 1 },
+      { label: "أحيانًا (Sometimes)", value: 2 },
+      { label: "غالبًا (Often)", value: 3 },
       { label: "دائمًا (Always)", value: 4 }
     ],
 
@@ -114,55 +115,55 @@ window.FIELD_MIND_ASSESSMENT = {
     {
       id: "dep_01",
       domain: "depression",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "فقدت الاهتمام أو المتعة في الأنشطة اليومية"
     },
     {
       id: "dep_02",
       domain: "depression",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "شعرت بالحزن أو الاكتئاب"
     },
     {
       id: "dep_03",
       domain: "depression",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "عانيت من اضطراب النوم"
     },
     {
       id: "dep_04",
       domain: "depression",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "شعرت بالتعب أو انخفاض الطاقة"
     },
     {
       id: "dep_05",
       domain: "depression",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "لاحظت تغيرًا في شهيتي للطعام مقارنةً بالمعتاد"
     },
     {
       id: "dep_06",
       domain: "depression",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "شعرت بالفشل أو انعدام القيمة"
     },
     {
       id: "dep_07",
       domain: "depression",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "عانيت من ضعف التركيز"
     },
     {
       id: "dep_08",
       domain: "depression",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "شعرت بالبطء أو التململ"
     },
     {
       id: "dep_09",
       domain: "depression",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "راودتني أفكار بإيذاء نفسي أو التخلص من حياتي"
     },
 
@@ -170,43 +171,43 @@ window.FIELD_MIND_ASSESSMENT = {
     {
       id: "anx_10",
       domain: "anxiety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "شعرت بالتوتر أو العصبية"
     },
     {
       id: "anx_11",
       domain: "anxiety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "لم أستطع السيطرة على القلق"
     },
     {
       id: "anx_12",
       domain: "anxiety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "شعرت بقلق مفرط"
     },
     {
       id: "anx_13",
       domain: "anxiety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "عانيت من صعوبة الاسترخاء"
     },
     {
       id: "anx_14",
       domain: "anxiety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "شعرت بالتململ"
     },
     {
       id: "anx_15",
       domain: "anxiety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أصبحت سريع الانفعال"
     },
     {
       id: "anx_16",
       domain: "anxiety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "شعرت بخوف ليس له سبب أو بإحساس باقتراب حدوث كارثة"
     },
 
@@ -214,61 +215,61 @@ window.FIELD_MIND_ASSESSMENT = {
     {
       id: "burnout_01",
       domain: "burnout",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بالاستنزاف النفسي بسبب العمل"
     },
     {
       id: "burnout_02",
       domain: "burnout",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر أن طاقتي مستنزفة"
     },
     {
       id: "burnout_03",
       domain: "burnout",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بالإجهاد عند التفكير في العمل"
     },
     {
       id: "burnout_04",
       domain: "burnout",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر أن ضغوط العمل تفوق قدرتي"
     },
     {
       id: "burnout_05",
       domain: "burnout",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أصبحت أقل حماسًا للعمل"
     },
     {
       id: "burnout_06",
       domain: "burnout",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر أنني أعمل بشكل آلي"
     },
     {
       id: "burnout_07",
       domain: "burnout",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أصبحت أقل صبرًا مع الزملاء"
     },
     {
       id: "burnout_08",
       domain: "burnout",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بانخفاض كفاءتي المهنية"
     },
     {
       id: "burnout_09",
       domain: "burnout",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر أن أدائي أقل من المعتاد"
     },
     {
       id: "burnout_10",
       domain: "burnout",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر أنني أقل قدرة على الإنجاز"
     },
 
@@ -276,43 +277,43 @@ window.FIELD_MIND_ASSESSMENT = {
     {
       id: "sleep_11",
       domain: "sleep_fatigue",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أعاني من صعوبة في النوم"
     },
     {
       id: "sleep_12",
       domain: "sleep_fatigue",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أستيقظ مرهقًا"
     },
     {
       id: "sleep_13",
       domain: "sleep_fatigue",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "الورديات تؤثر على جودة نومي"
     },
     {
       id: "sleep_14",
       domain: "sleep_fatigue",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بالنعاس أثناء العمل"
     },
     {
       id: "sleep_15",
       domain: "sleep_fatigue",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أعاني من اضطراب مواعيد النوم"
     },
     {
       id: "sleep_16",
       domain: "sleep_fatigue",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بإجهاد مستمر حتى بعد الراحة"
     },
     {
       id: "sleep_17",
       domain: "sleep_fatigue",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "قلة النوم أثرت على تركيزي"
     },
 
@@ -320,49 +321,49 @@ window.FIELD_MIND_ASSESSMENT = {
     {
       id: "stress_18",
       domain: "psychosocial_stress",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "يؤثر بُعدي عن أسرتي في حالتي النفسية"
     },
     {
       id: "stress_19",
       domain: "psychosocial_stress",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بالعزلة داخل الموقع"
     },
     {
       id: "stress_20",
       domain: "psychosocial_stress",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "تسبب لي ساعات العمل ضغطًا نفسيًا"
     },
     {
       id: "stress_21",
       domain: "psychosocial_stress",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "الظروف المناخية تؤثر على حالتي النفسية"
     },
     {
       id: "stress_22",
       domain: "psychosocial_stress",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أخشى التعرض للحوادث أثناء العمل"
     },
     {
       id: "stress_23",
       domain: "psychosocial_stress",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بأن متطلبات العمل مرتفعة جدًا"
     },
     {
       id: "stress_24",
       domain: "psychosocial_stress",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "العمل الليلي يؤثر على صحتي النفسية"
     },
     {
       id: "stress_25",
       domain: "psychosocial_stress",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بضعف الدعم الإداري أثناء الضغوط"
     },
 
@@ -370,31 +371,31 @@ window.FIELD_MIND_ASSESSMENT = {
     {
       id: "function_26",
       domain: "functional_impact",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "حالتي النفسية أثرت على أدائي الوظيفي"
     },
     {
       id: "function_27",
       domain: "functional_impact",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أرتكب أخطاء في العمل أكثر مما اعتدت"
     },
     {
       id: "function_28",
       domain: "functional_impact",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أصبحت أقل قدرة على التركيز"
     },
     {
       id: "function_29",
       domain: "functional_impact",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أصبحت أقل قدرة على اتخاذ القرار"
     },
     {
       id: "function_30",
       domain: "functional_impact",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أثرت الضغوط على علاقتي بالزملاء"
     },
 
@@ -402,31 +403,31 @@ window.FIELD_MIND_ASSESSMENT = {
     {
       id: "safety_01",
       domain: "psychological_safety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أستطيع التعبير عن المشكلات دون خوف"
     },
     {
       id: "safety_02",
       domain: "psychological_safety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "لا أخشى طلب المساعدة"
     },
     {
       id: "safety_03",
       domain: "psychological_safety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "يتم التعامل باحترام داخل الفريق"
     },
     {
       id: "safety_04",
       domain: "psychological_safety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بالأمان عند مناقشة الأخطاء"
     },
     {
       id: "safety_05",
       domain: "psychological_safety",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "لا أخشى العقاب غير العادل"
     },
 
@@ -434,31 +435,31 @@ window.FIELD_MIND_ASSESSMENT = {
     {
       id: "positive_06",
       domain: "positive_mental_health",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أستطيع التكيف مع الضغوط"
     },
     {
       id: "positive_07",
       domain: "positive_mental_health",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "لدي دعم اجتماعي جيد"
     },
     {
       id: "positive_08",
       domain: "positive_mental_health",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر أن عملي له معنى وقيمة"
     },
     {
       id: "positive_09",
       domain: "positive_mental_health",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أستطيع طلب المساعدة عند الحاجة"
     },
     {
       id: "positive_10",
       domain: "positive_mental_health",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أتعافى بسرعة بعد الضغوط"
     },
 
@@ -466,73 +467,73 @@ window.FIELD_MIND_ASSESSMENT = {
     {
       id: "satisfaction_01",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بالرضا عن بيئة العمل"
     },
     {
       id: "satisfaction_02",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "الإدارة تستمع للعاملين"
     },
     {
       id: "satisfaction_03",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بالعدالة التنظيمية"
     },
     {
       id: "satisfaction_04",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أستطيع التعبير عن رأيي بحرية"
     },
     {
       id: "satisfaction_05",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "توجد فرص للتطوير والترقي"
     },
     {
       id: "satisfaction_06",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بأن جهدي في العمل محل تقدير"
     },
     {
       id: "satisfaction_07",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "السكن بالموقع مناسب"
     },
     {
       id: "satisfaction_08",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "الإعاشة والخدمات مناسبة"
     },
     {
       id: "satisfaction_09",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "العبء الوظيفي مناسب"
     },
     {
       id: "satisfaction_10",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "توجد روح تعاون بين الزملاء"
     },
     {
       id: "satisfaction_11",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أشعر بالأمان أثناء العمل"
     },
     {
       id: "satisfaction_12",
       domain: "job_satisfaction",
-      responseScale: "frequency_1_4",
+      responseScale: "frequency_0_4",
       text: "أستطيع التوازن بين العمل والحياة"
     },
 
