@@ -156,48 +156,61 @@
     }
   }
 
-  async function setLoggedIn(nextSession) {
-    session = nextSession;
+async function setLoggedIn(nextSession) {
+  session = nextSession;
 
-    if (!session) {
-      setLoggedOut();
-      return;
+  if (!session) {
+    setLoggedOut();
+    return;
+  }
+
+  showOnly(["app-panel"]);
+
+  const emailEl = $("current-email");
+  if (emailEl) {
+    emailEl.textContent = session.user.email || "حساب موثق";
+  }
+
+  isAdmin = await checkAdmin();
+  isSuperAdmin = isAdmin ? await checkSuperAdmin() : false;
+
+  const adminBanner = $("admin-banner");
+  if (adminBanner) {
+    adminBanner.classList.toggle("hidden", !isAdmin);
+  }
+
+  const adminPanel = $("admin-panel");
+
+  if (isAdmin) {
+    if (adminPanel) {
+      adminPanel.classList.remove("hidden");
     }
 
-    showOnly(["app-panel"]);
+    toggleUserManagement(isSuperAdmin);
 
-    $("current-email").textContent =
-      session.user.email || "حساب موثق";
-
-    isAdmin = await checkAdmin();
-    isSuperAdmin = isAdmin ? await checkSuperAdmin() : false;
-
-    $("admin-banner").classList.toggle("hidden", !isAdmin);
-
-if (isAdmin) {
-  $("admin-panel").classList.remove("hidden");
-
-  toggleUserManagement(isSuperAdmin);
-
-  const dashboard = $("results-dashboard");
-  if (dashboard) {
-    dashboard.classList.toggle("hidden", !isSuperAdmin);
-  }
-
-  await loadAdminRecords();
-
-  if (isSuperAdmin) {
-    await loadAdminUsers();
-  }
-
-      if (isSuperAdmin) {
-        await loadAdminUsers();
-      }
-    } else {
-      $("admin-panel").classList.add("hidden");
-      toggleUserManagement(false);
+    const dashboard = $("results-dashboard");
+    if (dashboard) {
+      dashboard.classList.toggle("hidden", !isSuperAdmin);
     }
+
+    await loadAdminRecords();
+
+    if (isSuperAdmin) {
+      await loadAdminUsers();
+    }
+  } else {
+    if (adminPanel) {
+      adminPanel.classList.add("hidden");
+    }
+
+    const dashboard = $("results-dashboard");
+    if (dashboard) {
+      dashboard.classList.add("hidden");
+    }
+
+    toggleUserManagement(false);
   }
+}
 
   // تحديث التنبيه الخاص بالأسئلة الحرجة.
   function updateCriticalAlert(item) {
