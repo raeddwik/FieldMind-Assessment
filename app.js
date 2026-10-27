@@ -174,12 +174,21 @@
 
     $("admin-banner").classList.toggle("hidden", !isAdmin);
 
-    if (isAdmin) {
-      $("admin-panel").classList.remove("hidden");
+if (isAdmin) {
+  $("admin-panel").classList.remove("hidden");
 
-      toggleUserManagement(isSuperAdmin);
+  toggleUserManagement(isSuperAdmin);
 
-      await loadAdminRecords();
+  const dashboard = $("results-dashboard");
+  if (dashboard) {
+    dashboard.classList.toggle("hidden", !isSuperAdmin);
+  }
+
+  await loadAdminRecords();
+
+  if (isSuperAdmin) {
+    await loadAdminUsers();
+  }
 
       if (isSuperAdmin) {
         await loadAdminUsers();
