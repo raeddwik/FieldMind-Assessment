@@ -632,7 +632,7 @@ if (message) {
   }
 });
   
-function renderFilteredDashboard() {
+function renderFilteredDashboard(resetPage = true) {
   const from = $("results-from")?.value || "";
   const to = $("results-to")?.value || "";
   const version = $("results-version")?.value || "";
@@ -651,8 +651,8 @@ function renderFilteredDashboard() {
     return true;
   });
 
-  dashboardPage = 0;
-
+if (resetPage) dashboardPage = 0;
+  
   const totalEl = $("results-total");
   if (totalEl) {
     totalEl.textContent = String(visibleDashboardRows.length);
