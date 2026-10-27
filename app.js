@@ -221,11 +221,17 @@ async function setLoggedIn(nextSession) {
       'input[name="answer"]:checked'
     );
 
-    const isCritical = criticalIds.has(item.id);
-    const isYes = picked && Number(picked.value) === 1;
+    const isCriticalYes = criticalIds.has(item.id) &&
+      picked && Number(picked.value) === 1;
+
+    // Any non-zero response to dep_09 (self-harm/suicidal thoughts frequency item)
+    // also prompts a confidential human review; this is not a risk classification.
+    const isSelfHarmFrequencyItem = item.id === "dep_09";
+    const selfHarmFrequencyPositive = isSelfHarmFrequencyItem &&
+      picked && Number(picked.value) > 0;
 
     alert.style.display =
-      isCritical && isYes ? "block" : "none";
+      isCriticalYes || selfHarmFrequencyPositive ? "block" : "none";
   }
 
   function renderQuestion() {
@@ -293,12 +299,14 @@ async function setLoggedIn(nextSession) {
         <strong>تنبيه مهم — يلزم الانتباه لهذه الإجابة</strong>
         <p>
           تستلزم هذه الإجابة مراجعة بشرية سرية من مختص مؤهل،
-          وفق إجراءات المؤسسة المعتمدة.
+          وفق إجراءات المؤسسة المعتمدة. هذا التنبيه لا يحدد مستوى الخطورة
+          ولا يصدر تشخيصًا أو قرارًا بشأن اللياقة للعمل.
         </p>
         <p>
-          إذا كان هناك خطر فوري على سلامتك أو سلامة شخص آخر،
-          فاطلب المساعدة الطارئة المحلية فورًا، ولا تعتمد على
-          هذا التنبيه وحده.
+          إذا كانت الإجابة تعكس أفكارًا حالية عن الانتحار أو إيذاء النفس،
+          أو كان هناك خطر فوري على سلامتك أو سلامة شخص آخر، فاطلب مساعدة
+          طبية عاجلة أو تواصل مع خدمات الطوارئ المحلية فورًا؛ لا تنتظر نتيجة
+          التقييم ولا تعتمد على هذا التنبيه وحده.
         </p>
       </div>
     `;
@@ -476,13 +484,15 @@ async function setLoggedIn(nextSession) {
       const criticalLine =
         "مؤشرات المراجعة المنفصلة: " +
         (Number(critical.positiveCount) || 0) + " من " + criticalItems.length +
-        ". هذا العدد لا يشمل بند إيذاء النفس ذي مقياس التكرار، وليس تقديرًا لمستوى الخطورة أو تصنيفًا سريريًا.";
+        ". هذا العدد يخص أسئلة نعم/لا فقط، ولا يشمل بند تكرار أفكار الانتحار أو إيذاء النفس (dep_09)؛ " +
+        "تُراجع أي إجابة غير صفرية على هذا البند بصورة منفصلة. العدد ليس تقديرًا لمستوى الخطورة أو تصنيفًا سريريًا.";
 
       const criticalDetails = positiveCriticalLabels.length
         ? "\nالإجابات التي تحتاج مراجعة بشرية:\n- " + positiveCriticalLabels.join("\n- ") +
           "\n\nينبغي أن يراجع مختص مؤهل هذه الإجابات مباشرةً وبسرية وفق الإجراء المعتمد. " +
           "إذا كانت الإجابة المتعلقة بالانتحار أو إيذاء النفس تعكس خطرًا فوريًا حاليًا، فاطلب مساعدة طبية طارئة أو تواصل فورًا مع خدمات الطوارئ المحلية."
-        : "\nلم تُسجّل إجابات إيجابية على مؤشرات المراجعة المنفصلة أو على بند إيذاء النفس. هذا لا يستبعد وجود ضيق نفسي أو حاجة إلى الدعم.";
+        : "\nلم تُسجّل إجابات إيجابية على مؤشرات نعم/لا أو إجابة غير صفرية على بند تكرار إيذاء النفس. " +
+          "هذا لا يستبعد وجود ضيق نفسي أو حاجة إلى الدعم، ولا يغني عن التقييم السريري عند الحاجة.";
 
       $("result-summary").textContent =
         "تم حفظ إجاباتك وحساب الدرجات الوصفية الأولية بنجاح.\n\n" +
