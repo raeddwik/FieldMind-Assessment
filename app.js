@@ -450,15 +450,26 @@ async function setLoggedIn(nextSession) {
       $("result-view").classList.remove("hidden");
 
       const domainResults = calculationResult.domains || {};
+      const domainLabels = {
+        depression: "نسبة وجود أعراض اكتئابية",
+        anxiety: "نسبة وجود أعراض القلق",
+        burnout: "نسبة وجود أعراض الاحتراق النفسي",
+        sleep_fatigue: "نسبة وجود مشاكل النوم والإجهاد",
+        psychosocial_stress: "نسبة الضغوط النفسية والاجتماعية في العمل",
+        functional_impact: "نسبة وجود تأثير وظيفي",
+        psychological_safety: "نسبة السلامة النفسية في بيئة العمل",
+        positive_mental_health: "نسبة الصحة النفسية الإيجابية والمرونة",
+        job_satisfaction: "نسبة وجود الرضا الوظيفي"
+      };
       const scoreLines = Object.entries(domainResults)
-        .map(([, domain]) => {
+        .filter(([id]) => id !== "critical_indicators")
+        .map(([id, domain]) => {
           const score = typeof domain.score === "number"
             ? domain.score.toFixed(1) + "%"
             : "غير متاح";
-          const interpretation = domain.scoreMeaning || "لا يتوفر تفسير وصفي لهذا المحور.";
-          return domain.title + ": " + score + ". " + interpretation;
+          return (domainLabels[id] || domain.title || id) + ": " + score + ".";
         })
-        .join("\n");
+        .join("\\n");
 
       const critical = calculationResult.criticalIndicators || {};
       const criticalItems = Array.isArray(config.items)
@@ -480,22 +491,16 @@ async function setLoggedIn(nextSession) {
         positiveCriticalLabels.unshift(selfHarmItem.text);
       }
 
-      const criticalLine =
-        "مؤشرات المراجعة المنفصلة: " +
-        (Number(critical.positiveCount) || 0) + " من " + criticalItems.length +
-        " من أسئلة نعم/لا. هذا العدد ليس تقديرًا لمستوى الخطورة أو تصنيفًا سريريًا.";
-
       const criticalDetails = positiveCriticalLabels.length
-        ? "\nإجابات تستلزم مراجعة مباشرة من مختص مؤهل وبسرية: " +
+        ? "\\n\\nإجابات تستلزم مراجعة مباشرة من مختص مؤهل:\\n" +
           positiveCriticalLabels.join("؛ ") +
-          ". إذا كانت الإجابة المتعلقة بالانتحار أو إيذاء النفس تعكس خطرًا فوريًا حاليًا، فاطلب مساعدة طبية طارئة أو تواصل فورًا مع خدمات الطوارئ المحلية."
-        : "\nلا توجد إجابات إيجابية على مؤشرات نعم/لا، ولم تُسجّل إجابة غير صفرية على بند إيذاء النفس. هذا لا يستبعد الحاجة إلى الدعم أو التقييم عند الحاجة.";
+          ".\\nإذا كانت الإجابة المتعلقة بالانتحار أو إيذاء النفس تعكس خطرًا فوريًا حاليًا، فاطلب مساعدة طبية عاجلة أو تواصل فورًا مع خدمات الطوارئ المحلية."
+        : "\\n\\nإجابات تستلزم مراجعة مباشرة من مختص مؤهل: لا توجد إجابات إيجابية مسجلة في هذا القسم. لا يستبعد ذلك الحاجة إلى الدعم أو التقييم عند الحاجة.";
 
       $("result-summary").textContent =
-        "تم حفظ إجاباتك بنجاح. فيما يلي قيمة كل محور وتفسيره الوصفي الأولي:\n\n" +
-        scoreLines + "\n\n" + criticalLine + criticalDetails +
-        "\n\nهذا التقييم أداة إرشادية أولية غير معتمدة سريريًا، ولا يمثل تشخيصًا نفسيًا أو قرارًا بشأن اللياقة للعمل، ولا ينبغي استخدامه منفردًا لاتخاذ قرارات وظيفية.";
-
+        "تم حفظ إجاباتك بنجاح.\\n\\nفيما يلي قيمة كل محور:\\n" +
+        scoreLines + criticalDetails +
+        "\\n\\nهذا التقييم أداة إرشادية أولية، ولا يمثل تشخيصًا نفسيًا، ولا يمكن استخدامه لاتخاذ قرارات وظيفية أو تحديد اللياقة للعمل.";
       if (isAdmin) {
         await loadAdminRecords();
       }
