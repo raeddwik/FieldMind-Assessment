@@ -445,20 +445,17 @@ async function setLoggedIn(nextSession) {
 
       const scoreLines = Object.entries(domainResults)
         .map(([id, domain]) => {
-          const score =
-            typeof domain.score === "number"
-              ? domain.score.toFixed(2) + "%"
-              : "غير متاح";
-
-          return `${domain.title}: ${score}`;
+          const score = typeof domain.score === "number" ? domain.score.toFixed(2) + "%" : "غير متاح";
+          const riskScore = typeof domain.riskOrientedScore === "number" && domain.riskOrientedScore !== domain.score
+            ? " | درجة عكسية بحثية فقط: " + domain.riskOrientedScore.toFixed(2) + "%" : "";
+          return domain.title + ": " + score + riskScore;
         })
         .join("\n");
 
       $("result-summary").textContent =
         "تم حفظ إجاباتك وحساب الدرجات الأولية بنجاح.\n\n" +
         scoreLines +
-        "\n\nهذه درجات معيارية أولية وليست تشخيصًا نفسيًا أو تصنيفًا سريريًا.";
-
+        "\n\nهذه درجات وصفية أولية وليست تشخيصًا نفسيًا أو تصنيفًا سريريًا.";
       if (isAdmin) {
         await loadAdminRecords();
       }
@@ -602,7 +599,13 @@ if (tbody) {
     const domains = row.result?.domains;
     const domainsText = domains && typeof domains === "object"
       ? Object.entries(domains)
-          .map(([key, value]) => `${key}: ${value}`)
+          .map(([key, value]) => {
+            if (!value || typeof value !== "object") return key + ": " + value;
+            const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
+            const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
+              ? " (درجة عكسية بحثية: " + value.riskOrientedScore.toFixed(1) + "%)" : "";
+            return (value.title || key) + ": " + score + risk;
+          })
           .join("، ")
       : "لا توجد درجات مسجلة";
 
@@ -696,12 +699,17 @@ if (resetPage) dashboardPage = 0;
     tbody.innerHTML = pageRows.map(row => {
       const domains = row.result?.domains;
 
-      const domainsText =
-        domains && typeof domains === "object"
-          ? Object.entries(domains)
-              .map(([key, value]) => `${key}: ${value}`)
-              .join("، ")
-          : "لا توجد درجات مسجلة";
+      const domainsText = domains && typeof domains === "object"
+        ? Object.entries(domains)
+            .map(([key, value]) => {
+              if (!value || typeof value !== "object") return key + ": " + value;
+              const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
+              const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
+                ? " (درجة عكسية بحثية: " + value.riskOrientedScore.toFixed(1) + "%)" : "";
+              return (value.title || key) + ": " + score + risk;
+            })
+            .join("، ")
+        : "لا توجد درجات مسجلة";
 
       return `
         <tr>
