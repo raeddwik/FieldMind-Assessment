@@ -544,6 +544,32 @@ if (isAdmin) {
 
     return collected;
   }
+  // ربط زر تحديث لوحة النتائج.
+$("refresh-results-button")?.addEventListener("click", async () => {
+  const message = $("results-message");
+
+  try {
+    if (message) {
+      message.textContent = "جارٍ تحميل النتائج...";
+    }
+
+    const rows = await fetchAllDashboardRows();
+
+    if (message) {
+      message.textContent =
+        `تم تحميل ${rows.length} سجلًا بنجاح.`;
+    }
+
+    console.log("FieldMind dashboard rows:", rows);
+  } catch (error) {
+    console.error("FieldMind dashboard error:", error);
+
+    if (message) {
+      message.textContent =
+        "تعذر تحميل النتائج. تحقق من صلاحيات الحساب واتصال الخادم.";
+    }
+  }
+});
   // تحميل قائمة الحسابات من دالة Supabase الآمنة.
   async function loadAdminUsers() {
     if (!isSuperAdmin || !db()) return;
