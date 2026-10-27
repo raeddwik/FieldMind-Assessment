@@ -703,7 +703,7 @@ if (resetPage) dashboardPage = 0;
       '<tr><td colspan="5">لا توجد نتائج مطابقة للفلاتر.</td></tr>';
   } else {
     tbody.innerHTML = pageRows.map(row => {
-      const domains = row.result?.domains;
+      const domains = row.domains ?? row.result?.domains;
 
       const domainsText = domains && typeof domains === "object"
         ? Object.entries(domains)
@@ -824,7 +824,7 @@ $("export-results-button")?.addEventListener("click", () => {
         : "",
       row.user_id || "",
       row.scale_version || "",
-      row.result?.status || "",
+      row.status || row.result?.status || "",
       domainsText
     ];
   });
