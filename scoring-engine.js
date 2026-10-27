@@ -270,7 +270,7 @@
       "positive_mental_health", "psychological_safety"
     ];
     const indexInputsAvailable = requiredIndexDomains.every(
-      id => Number.isFinite(domainRiskScore(id))
+      id => Number.isFinite(domainScore(id))
     ) && criticalItems.length > 0;
 
     let experimentalOPRI = null;
