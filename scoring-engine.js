@@ -4,7 +4,7 @@
  * COPHAS-1.0-DRAFT
  *
  * Technical preview only.
- * Preliminary mathematical normalization and validation.
+ * Domain-level min-max normalization with explicit score direction.
  * NOT a validated clinical scoring system.
  * No diagnosis, clinical classification, or fitness-for-work decision.
  */
@@ -14,8 +14,13 @@
 
   const CRITICAL_DOMAIN = "critical_indicators";
 
-  // Do not assume reverse scoring without a verified scoring key.
-  const REVERSE_ITEMS = new Set([]);
+  // Positive-resource domains are additionally expressed as risk-oriented scores.
+  // Their original domain score remains unchanged and interpretable as positive endorsement.
+  const POSITIVE_RESOURCE_DOMAINS = new Set([
+    "psychological_safety",
+    "positive_mental_health",
+    "job_satisfaction"
+  ]);
 
   function getConfiguration() {
     const config = window.FIELD_MIND_ASSESSMENT;
@@ -214,11 +219,22 @@
         continue;
       }
 
+      // Min-max normalization maps the lowest selectable response to 0 and the highest to 100.
+      // This avoids treating the minimum response value (1) as 25% of the domain maximum.
       const score = ((total - minimumTotal) / range) * 100;
+      const roundedScore = Math.round(score * 100) / 100;
+      const riskOrientedScore = POSITIVE_RESOURCE_DOMAINS.has(domain.id)
+        ? Math.round((100 - score) * 100) / 100
+        : roundedScore;
 
       domainResults[domain.id] = {
         title: domain.title,
-        score: Math.round(score * 100) / 100,
+        score: roundedScore,
+        scoreMethod: "min_max_0_100",
+        riskOrientedScore,
+        riskOrientedScoreMeaning: POSITIVE_RESOURCE_DOMAINS.has(domain.id)
+          ? "عكس درجة الموارد الإيجابية لأغراض العرض البحثي فقط؛ ليست درجة سريرية معتمدة."
+          : "درجة مطبّعة حسب اتجاه الأعراض أو الصعوبات؛ ليست تصنيفًا سريريًا.",
         scoreDirection: domain.scoreDirection || "not_specified",
         scoreMeaning: domain.scoreMeaning || null,
         answeredItems: items.length,
@@ -240,6 +256,11 @@
 
     return {
       status: "calculation_preview_only",
+      scoringMethod: {
+        domainNormalization: "((observed total - minimum possible total) / (maximum possible total - minimum possible total)) * 100",
+        interpretation: "Domain percentages are preliminary descriptive scores only. Positive-resource domains also receive a separate inverse risk-oriented score; no overall composite is calculated.",
+        validated: false
+      },
       scaleVersion: config.version,
       domains: domainResults,
       criticalIndicators: {
