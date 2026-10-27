@@ -655,7 +655,7 @@ function renderFilteredDashboard(resetPage = true) {
     if (from && (!date || date < from)) return false;
     if (to && (!date || date > to)) return false;
     if (version && row.scale_version !== version) return false;
-    if (status && row.result?.status !== status) return false;
+    if (status && (row.status ?? row.result?.status) !== status) return false;
 
     return true;
   });
@@ -724,7 +724,7 @@ if (resetPage) dashboardPage = 0;
             : "—")}</td>
           <td>${escapeHtml(row.user_id || "—")}</td>
           <td>${escapeHtml(row.scale_version || "—")}</td>
-          <td>${escapeHtml(row.result?.status || "—")}</td>
+          <td>${escapeHtml(row.status || row.result?.status || "—")}</td>
           <td>${escapeHtml(domainsText)}</td>
         </tr>
       `;
