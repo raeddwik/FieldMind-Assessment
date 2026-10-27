@@ -273,13 +273,17 @@
       id => Number.isFinite(domainScore(id))
     ) && criticalItems.length > 0;
 
-    let experimentalOPRI = null;
+    let rawOPRI = null;
+    let normalizedOPRI = null;
+    let opfScore = null;
+    let riskLevel = null;
+    let recommendedAction = null;
     let redFlagsPercentage = null;
 
     if (indexInputsAvailable) {
       redFlagsPercentage =
         Math.round((positiveCriticalItems.length / criticalItems.length) * 10000) / 100;
-      experimentalOPRI = Math.round((
+      rawOPRI = Math.round((
         domainScore("depression") * 1.2 +
         domainScore("anxiety") * 1.0 +
         domainScore("burnout") * 1.3 +
@@ -290,6 +294,27 @@
         domainScore("positive_mental_health") * 0.8 -
         domainScore("psychological_safety") * 0.8
       ) * 100) / 100;
+
+      // Provisional linear normalization of the theoretical raw range (-160 to 910)
+      // onto 0–100. This is mathematical scaling only, not clinical validation.
+      normalizedOPRI = Math.max(0, Math.min(100,
+        Math.round(((rawOPRI + 160) / 10.7) * 100) / 100
+      ));
+      opfScore = Math.round((100 - normalizedOPRI) * 100) / 100;
+
+      if (normalizedOPRI >= 80) {
+        riskLevel = "Critical";
+        recommendedAction = "تقييم مهني عاجل، والتدخل السريري المناسب، ومتابعة مكثفة.";
+      } else if (normalizedOPRI >= 65) {
+        riskLevel = "High";
+        recommendedAction = "الإحالة إلى مختص مناسب في الصحة النفسية وتقييم القدرة الوظيفية.";
+      } else if (normalizedOPRI >= 35) {
+        riskLevel = "Moderate";
+        recommendedAction = "إعادة التقييم خلال نحو 3 أشهر ومراجعة العوامل ذات الصلة في بيئة العمل.";
+      } else {
+        riskLevel = "Low";
+        recommendedAction = "متابعة دورية وتعزيز الصحة والوقاية.";
+      }
     }
 
     return {
@@ -312,20 +337,27 @@
       },
       experimentalIndices: {
         status: indexInputsAvailable ? "experimental_not_validated" : "not_calculated_missing_inputs",
-        opri: experimentalOPRI,
+        opri: normalizedOPRI,
+        rawOpri: rawOPRI,
+        opfScore,
+        riskLevel,
+        recommendedAction,
+        opriNormalization: "(raw OPRI + 160) / 10.7, capped to 0–100",
+        opfFormula: "100 - normalized OPRI",
         opriFormula: "Depression%*1.2 + Anxiety%*1.0 + Burnout%*1.3 + Sleep/Fatigue%*1.1 + PsychosocialStress%*1.0 + FunctionalImpact%*1.5 + RedFlags%*2.0 - PositiveMentalHealth%*0.8 - PsychologicalSafety%*0.8",
         opriMeaning: "مؤشر بحثي تجريبي وفق أوزان المسودة؛ لا توجد حدود تفسيرية معتمدة ولا يجوز استخدامه لتشخيص أو قرار وظيفي.",
         assumptions: [
           "Red Flags % حُسبت مؤقتًا كنسبة الإجابات الإيجابية من أسئلة نعم/لا الحرجة الثمانية.",
           "لم تُضف درجة الرضا الوظيفي إلى OPRI لأن معادلة المسودة لا تذكرها.",
-          "لم يُحسب OPF لأن تعريف GOMHI الذي تعتمد عليه معادلته غير محدد بوضوح في المسودة."
+          "حُسب OPF مؤقتًا بوصفه 100 ناقص OPRI بعد تطبيع OPRI إلى نطاق 0–100؛ التحويل والأوزان والحدود غير معتمدة وتحتاج إلى تحقق."
         ],
         validated: false,
-        classificationEnabled: false
+        classificationEnabled: true,
+        classificationStatus: "experimental_not_validated"
       },
       overallClinicalScore: null,
-      classification: null,
-      recommendations: null,
+      classification: riskLevel,
+      recommendations: recommendedAction,
       clinicalValidation: "not_established",
       previewOnly: true
     };
