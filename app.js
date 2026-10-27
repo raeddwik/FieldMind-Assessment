@@ -602,7 +602,7 @@ if (versionsEl) {
 const tbody = $("results-rows");
 if (tbody) {
   tbody.innerHTML = rows.map(row => {
-    const domains = row.result?.domains;
+    const domains = row.domains ?? row.result?.domains;
     const domainsText = domains && typeof domains === "object"
       ? Object.entries(domains)
           .map(([key, value]) => {
@@ -622,7 +622,7 @@ if (tbody) {
           : "—")}</td>
         <td>${escapeHtml(row.user_id || "—")}</td>
         <td>${escapeHtml(row.scale_version || "—")}</td>
-        <td>${escapeHtml(row.result?.status || "—")}</td>
+        <td>${escapeHtml(row.status || row.result?.status || "—")}</td>
         <td>${escapeHtml(domainsText)}</td>
       </tr>
     `;
