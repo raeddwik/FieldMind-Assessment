@@ -287,8 +287,8 @@
         domainScore("psychosocial_stress") * 1.0 +
         domainScore("functional_impact") * 1.5 +
         redFlagsPercentage * 2.0 -
-        domainRiskScore("positive_mental_health") * 0.8 -
-        domainRiskScore("psychological_safety") * 0.8
+        domainScore("positive_mental_health") * 0.8 -
+        domainScore("psychological_safety") * 0.8
       ) * 100) / 100;
     }
 
