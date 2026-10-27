@@ -455,12 +455,30 @@ async function setLoggedIn(nextSession) {
         })
         .join("\n");
       const critical = calculationResult.criticalIndicators || {};
-      const criticalLine = "المؤشرات التي تحتاج مراجعة بشرية: " + (Number(critical.positiveCount) || 0) + " من " + (Array.isArray(config.items) ? config.items.filter(item => item.domain === "critical_indicators").length : 0) + ". العدد ليس تصنيفًا سريريًا، وأي إجابة إيجابية تستلزم مراجعة وفق الإجراء المعتمد.";
+      const criticalItems = Array.isArray(config.items)
+        ? config.items.filter(item => item.domain === "critical_indicators")
+        : [];
+      const positiveCriticalIds = Array.isArray(critical.positiveItemIds)
+        ? critical.positiveItemIds
+        : [];
+      const positiveCriticalLabels = criticalItems
+        .filter(item => positiveCriticalIds.includes(item.id))
+        .map(item => item.text);
+      const criticalLine =
+        "مؤشرات تحتاج مراجعة بشرية: " +
+        (Number(critical.positiveCount) || 0) + " من " + criticalItems.length +
+        ". هذا العدد ليس تقديرًا لمستوى الخطورة ولا تصنيفًا سريريًا.";
+
+      const criticalDetails = positiveCriticalLabels.length
+        ? "\nالإجابات الإيجابية التي تحتاج مراجعة:\n- " + positiveCriticalLabels.join("\n- ") +
+          "\n\nينبغي أن يراجع مختص مؤهل هذه الإجابات مباشرةً وبسرية وفق الإجراء المعتمد. " +
+          "إذا كانت الإجابة المتعلقة بالانتحار أو إيذاء النفس تعكس خطرًا فوريًا حاليًا، فاطلب مساعدة طبية طارئة أو تواصل فورًا مع خدمات الطوارئ المحلية."
+        : "\nلم تُسجّل إجابات إيجابية على مؤشرات المراجعة المنفصلة. هذا لا يستبعد وجود ضيق نفسي أو حاجة إلى الدعم.";
 
       $("result-summary").textContent =
-        "تم حفظ إجاباتك وحساب الدرجات الأولية بنجاح.\n\n" +
-        scoreLines + "\n\n" + criticalLine +
-        "\n\nهذه درجات وصفية أولية وليست تشخيصًا نفسيًا أو تصنيفًا سريريًا.";
+        "تم حفظ إجاباتك وحساب الدرجات الوصفية الأولية بنجاح.\n\n" +
+        scoreLines + "\n\n" + criticalLine + criticalDetails +
+        "\n\nهذه النتائج أداة إرشادية أولية فقط؛ لا تمثل تشخيصًا نفسيًا أو تقديرًا للتنبؤ بالخطر أو تصنيفًا للياقة للعمل. لا تستخدم وحدها لاتخاذ قرارات وظيفية.";
 
             if (isAdmin) {
         await loadAdminRecords();
