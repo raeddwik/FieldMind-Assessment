@@ -717,22 +717,47 @@ if (resetPage) dashboardPage = 0;
     }).join("");
   }
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(visibleDashboardRows.length / dashboardPageSize)
+  );
+
   const pageLabel = $("results-page-label");
   if (pageLabel) {
-    const totalPages = Math.max(
-      1,
-      Math.ceil(visibleDashboardRows.length / dashboardPageSize)
-    );
-
     pageLabel.textContent =
       `الصفحة ${dashboardPage + 1} من ${totalPages}`;
   }
+
+  const prevButton = $("results-prev");
+  const nextButton = $("results-next");
+
+  if (prevButton) prevButton.disabled = dashboardPage <= 0;
+  if (nextButton) nextButton.disabled = dashboardPage >= totalPages - 1;
 }
 
 $("apply-results-filters")?.addEventListener(
   "click",
   renderFilteredDashboard
 );
+  // التنقل بين صفحات النتائج.
+$("results-prev")?.addEventListener("click", () => {
+  if (dashboardPage > 0) {
+    dashboardPage--;
+    renderFilteredDashboard(false);
+  }
+});
+
+$("results-next")?.addEventListener("click", () => {
+  const totalPages = Math.max(
+    1,
+    Math.ceil(visibleDashboardRows.length / dashboardPageSize)
+  );
+
+  if (dashboardPage < totalPages - 1) {
+    dashboardPage++;
+    renderFilteredDashboard(false);
+  }
+});
   // تصدير النتائج الظاهرة بعد تطبيق الفلاتر إلى CSV.
 $("export-results-button")?.addEventListener("click", () => {
   if (!isSuperAdmin) {
