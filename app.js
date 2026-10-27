@@ -449,9 +449,9 @@ async function setLoggedIn(nextSession) {
           const score = typeof domain.score === "number" ? domain.score.toFixed(2) + "%" : "غير متاح";
           if (positiveDomains.has(id)) {
             const inverse = typeof domain.riskOrientedScore === "number" ? domain.riskOrientedScore.toFixed(2) + "%" : "غير متاح";
-            return domain.title + ": " + score + " (مؤشر إيجابي؛ الدرجة العكسية البحثية: " + inverse + ")";
+            return domain.title + ": " + score + " (درجة تأييد الموارد الإيجابية؛ الأعلى يعني تأييدًا أكبر لهذه الموارد، وليس أعراضًا أكثر؛ المؤشر العكسي البحثي غير المعتمد: " + inverse + ")";
           }
-          return domain.title + ": " + score + " (مؤشر وصفي للأعراض أو الصعوبات)";
+          return domain.title + ": " + score + " (درجة وصفية للأعراض أو الصعوبات؛ الأعلى يعني تكرارًا أكبر للإجابات الدالة على الصعوبة، وليست حدًا سريريًا)";
         })
         .join("\n");
       const critical = calculationResult.criticalIndicators || {};
@@ -636,7 +636,7 @@ if (tbody) {
             if (!value || typeof value !== "object") return key + ": " + value;
             const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
             const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
-              ? " (درجة عكسية بحثية: " + value.riskOrientedScore.toFixed(1) + "%)" : "";
+              ? " (مؤشر عكسي بحثي غير معتمد: " + value.riskOrientedScore.toFixed(1) + "%؛ لا يُفسر كدرجة سريرية)" : "";
             return (value.title || key) + ": " + score + risk;
           })
           .join("، ")
@@ -738,7 +738,7 @@ if (resetPage) dashboardPage = 0;
               if (!value || typeof value !== "object") return key + ": " + value;
               const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
               const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
-                ? " (درجة عكسية بحثية: " + value.riskOrientedScore.toFixed(1) + "%)" : "";
+                ? " (مؤشر عكسي بحثي غير معتمد: " + value.riskOrientedScore.toFixed(1) + "%؛ ليس درجة سريرية)" : "";
               return (value.title || key) + ": " + score + risk;
             })
             .join("، ")
