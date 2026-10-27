@@ -443,20 +443,26 @@ async function setLoggedIn(nextSession) {
 
       const domainResults = calculationResult.domains || {};
 
+      const positiveDomains = new Set(["psychological_safety", "positive_mental_health", "job_satisfaction"]);
       const scoreLines = Object.entries(domainResults)
         .map(([id, domain]) => {
           const score = typeof domain.score === "number" ? domain.score.toFixed(2) + "%" : "غير متاح";
-          const riskScore = typeof domain.riskOrientedScore === "number" && domain.riskOrientedScore !== domain.score
-            ? " | درجة عكسية بحثية فقط: " + domain.riskOrientedScore.toFixed(2) + "%" : "";
-          return domain.title + ": " + score + riskScore;
+          if (positiveDomains.has(id)) {
+            const inverse = typeof domain.riskOrientedScore === "number" ? domain.riskOrientedScore.toFixed(2) + "%" : "غير متاح";
+            return domain.title + ": " + score + " (مؤشر إيجابي؛ الدرجة العكسية البحثية: " + inverse + ")";
+          }
+          return domain.title + ": " + score + " (مؤشر وصفي للأعراض أو الصعوبات)";
         })
         .join("\n");
+      const critical = calculationResult.criticalIndicators || {};
+      const criticalLine = "المؤشرات التي تحتاج مراجعة بشرية: " + (Number(critical.positiveCount) || 0) + " من " + (Array.isArray(config.items) ? config.items.filter(item => item.domain === "critical_indicators").length : 0) + ". العدد ليس تصنيفًا سريريًا، وأي إجابة إيجابية تستلزم مراجعة وفق الإجراء المعتمد.";
 
       $("result-summary").textContent =
         "تم حفظ إجاباتك وحساب الدرجات الأولية بنجاح.\n\n" +
-        scoreLines +
+        scoreLines + "\n\n" + criticalLine +
         "\n\nهذه درجات وصفية أولية وليست تشخيصًا نفسيًا أو تصنيفًا سريريًا.";
-      if (isAdmin) {
+
+            if (isAdmin) {
         await loadAdminRecords();
       }
     } catch (error) {
