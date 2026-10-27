@@ -804,7 +804,7 @@ $("export-results-button")?.addEventListener("click", () => {
   };
 
   const rows = visibleDashboardRows.map((row) => {
-    const domains = row.result?.domains;
+    const domains = row.domains ?? row.result?.domains;
     const domainsText =
       domains && typeof domains === "object"
         ? Object.entries(domains)
