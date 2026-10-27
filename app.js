@@ -573,8 +573,56 @@ $("refresh-results-button")?.addEventListener("click", async () => {
         `تم تحميل ${rows.length} سجلًا بنجاح.`;
     }
 
-    console.log("FieldMind dashboard rows:", rows);
-  } catch (error) {
+allDashboardRows = rows;
+visibleDashboardRows = [...rows];
+dashboardPage = 0;
+
+const totalEl = $("results-total");
+if (totalEl) {
+  totalEl.textContent = String(rows.length);
+}
+
+const usersEl = $("results-users-total");
+if (usersEl) {
+  usersEl.textContent = String(
+    new Set(rows.map(row => row.user_id).filter(Boolean)).size
+  );
+}
+
+const versionsEl = $("results-versions-total");
+if (versionsEl) {
+  versionsEl.textContent = String(
+    new Set(rows.map(row => row.scale_version).filter(Boolean)).size
+  );
+}
+
+const tbody = $("results-rows");
+if (tbody) {
+  tbody.innerHTML = rows.map(row => {
+    const domains = row.result?.domains;
+    const domainsText = domains && typeof domains === "object"
+      ? Object.entries(domains)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join("، ")
+      : "لا توجد درجات مسجلة";
+
+    return `
+      <tr>
+        <td>${escapeHtml(row.created_at
+          ? new Date(row.created_at).toLocaleString("ar-EG")
+          : "—")}</td>
+        <td>${escapeHtml(row.user_id || "—")}</td>
+        <td>${escapeHtml(row.scale_version || "—")}</td>
+        <td>${escapeHtml(row.result?.status || "—")}</td>
+        <td>${escapeHtml(domainsText)}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+if (message) {
+  message.textContent = `تم تحميل ${rows.length} سجلًا بنجاح.`;
+}  } catch (error) {
     console.error("FieldMind dashboard error:", error);
 
     if (message) {
