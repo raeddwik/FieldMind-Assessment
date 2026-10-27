@@ -497,10 +497,37 @@ async function setLoggedIn(nextSession) {
           ".\nإذا كانت الإجابة المتعلقة بالانتحار أو إيذاء النفس تعكس خطرًا فوريًا حاليًا، فاطلب مساعدة طبية عاجلة أو تواصل فورًا مع خدمات الطوارئ المحلية."
         : "\n\nإجابات تستلزم مراجعة مباشرة من مختص مؤهل: لا توجد إجابات إيجابية مسجلة في هذا القسم. لا يستبعد ذلك الحاجة إلى الدعم أو التقييم عند الحاجة.";
 
-      $("result-summary").textContent =
-        "تم حفظ إجاباتك بنجاح.\n\nفيما يلي قيمة كل محور:\n" +
-        scoreLines + criticalDetails +
-        "\n\nهذا التقييم أداة إرشادية أولية، ولا يمثل تشخيصًا نفسيًا، ولا يمكن استخدامه لاتخاذ قرارات وظيفية أو تحديد اللياقة للعمل.";
+      const indices = calculationResult.experimentalIndices || {};
+      const formatIndex = value =>
+        typeof value === "number" ? value.toFixed(1) : "غير متاح";
+      const indexSummary = typeof indices.opri === "number" &&
+          typeof indices.opfScore === "number"
+        ? `
+          <section class="index-summary" style="margin:18px 0;padding:16px;border:1px solid #d7dee8;border-radius:10px">
+            <h3>المؤشرات الإرشادية الأولية</h3>
+            <p><strong>OPF Score:</strong> ${formatIndex(indices.opfScore)} / 100</p>
+            <p><strong>OPRI:</strong> ${formatIndex(indices.opri)} / 100</p>
+            <p><strong>Risk Level:</strong> ${escapeHtml(indices.riskLevel || "غير متاح")}</p>
+            <p><strong>Recommended Action:</strong> ${escapeHtml(indices.recommendedAction || "تُراجع النتيجة مع مختص مؤهل.")}</p>
+            <p class="small">OPRI الخام قبل التطبيع: ${formatIndex(indices.rawOpri)}. التطبيع والحدود تجريبية وغير معتمدة سريريًا.</p>
+          </section>`
+        : '<p>تعذر حساب المؤشرين؛ يرجى مراجعة إعدادات المقياس.</p>';
+
+      const domainHtml = Object.entries(domainResults)
+        .filter(([id]) => id !== "critical_indicators")
+        .map(([id, domain]) => {
+          const score = typeof domain.score === "number"
+            ? domain.score.toFixed(1) + "%"
+            : "غير متاح";
+          return `<li><strong>${escapeHtml(domainLabels[id] || domain.title || id)}:</strong> ${score}</li>`;
+        }).join("");
+
+      $("result-summary").innerHTML =
+        '<p><strong>تم حفظ إجاباتك بنجاح.</strong></p>' +
+        indexSummary +
+        '<h3>نتائج محاور التقييم</h3><ul>' + domainHtml + '</ul>' +
+        '<div style="white-space:pre-line">' + escapeHtml(criticalDetails) + '</div>' +
+        '<p class="small">هذا تقييم إرشادي أولي وليس تشخيصًا نفسيًا. المؤشرات والأوزان وحدود التصنيف تجريبية وتحتاج إلى تحقق؛ لا تستخدم النتيجة وحدها لاتخاذ قرارات وظيفية أو تحديد اللياقة للعمل. أي إجابة حرجة تستلزم مراجعة بشرية مناسبة بصرف النظر عن المؤشر الإجمالي.</p>';
       if (isAdmin) {
         await loadAdminRecords();
       }
