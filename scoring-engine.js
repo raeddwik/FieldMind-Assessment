@@ -156,9 +156,9 @@
         continue;
       }
 
-      normalizedAnswers[item.id] = REVERSE_ITEMS.has(item.id)
-        ? bounds.min + bounds.max - value
-        : value;
+      // Keep raw item responses unchanged. Direction adjustments are applied only
+      // as a separate descriptive view for positive-resource domains below.
+      normalizedAnswers[item.id] = value;
     }
 
     if (errors.length > 0) {
