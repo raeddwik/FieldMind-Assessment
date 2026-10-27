@@ -645,9 +645,13 @@ if (tbody) {
           .map(([key, value]) => {
             if (!value || typeof value !== "object") return key + ": " + value;
             const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
+            const positiveResourceDomain = ["psychological_safety", "positive_mental_health", "job_satisfaction"].includes(key);
+            const direction = positiveResourceDomain
+              ? " (درجة تأييد موارد إيجابية؛ الأعلى يعني موارد مُبلّغًا عنها أكثر، وليس أعراضًا أكثر)"
+              : " (درجة وصفية للأعراض أو الصعوبات؛ الأعلى يعني تكرارًا أكبر للإجابات الدالة على الصعوبة)";
             const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
-              ? " (مؤشر عكسي بحثي غير معتمد: " + value.riskOrientedScore.toFixed(1) + "%؛ لا يُفسر كدرجة سريرية)" : "";
-            return (value.title || key) + ": " + score + risk;
+              ? "؛ المؤشر العكسي البحثي غير المعتمد: " + value.riskOrientedScore.toFixed(1) + "%" : "";
+            return (value.title || key) + ": " + score + direction + risk;
           })
           .join("، ")
       : "لا توجد درجات مسجلة";
@@ -747,9 +751,13 @@ if (resetPage) dashboardPage = 0;
             .map(([key, value]) => {
               if (!value || typeof value !== "object") return key + ": " + value;
               const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
+              const positiveResourceDomain = ["psychological_safety", "positive_mental_health", "job_satisfaction"].includes(key);
+              const direction = positiveResourceDomain
+                ? " (درجة تأييد موارد إيجابية؛ الأعلى يعني موارد مُبلّغًا عنها أكثر، وليس أعراضًا أكثر)"
+                : " (درجة وصفية للأعراض أو الصعوبات؛ الأعلى يعني تكرارًا أكبر للإجابات الدالة على الصعوبة)";
               const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
-                ? " (مؤشر عكسي بحثي غير معتمد: " + value.riskOrientedScore.toFixed(1) + "%؛ ليس درجة سريرية)" : "";
-              return (value.title || key) + ": " + score + risk;
+                ? "؛ المؤشر العكسي البحثي غير المعتمد: " + value.riskOrientedScore.toFixed(1) + "%" : "";
+              return (value.title || key) + ": " + score + direction + risk;
             })
             .join("، ")
         : "لا توجد درجات مسجلة";
