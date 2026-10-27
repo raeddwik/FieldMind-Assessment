@@ -4,7 +4,7 @@
  * COPHAS-1.0-DRAFT
  *
  * Technical preview only.
- * Domain-level min-max normalization with explicit score direction.
+ * Preliminary domain normalization using the configured scale minimum and maximum.
  * NOT a validated clinical scoring system.
  * No diagnosis, clinical classification, or fitness-for-work decision.
  */
@@ -219,8 +219,8 @@
         continue;
       }
 
-      // Min-max normalization maps the lowest selectable response to 0 and the highest to 100.
-      // This avoids treating the minimum response value (1) as 25% of the domain maximum.
+      // Scale-aware normalization maps the configured minimum to 0 and maximum to 100.
+      // With the adopted 0–4 scale, this equals observed total / maximum possible total * 100.
       const score = ((total - minimumTotal) / range) * 100;
       const roundedScore = Math.round(score * 100) / 100;
       const riskOrientedScore = POSITIVE_RESOURCE_DOMAINS.has(domain.id)
@@ -257,7 +257,7 @@
     return {
       status: "calculation_preview_only",
       scoringMethod: {
-        domainNormalization: "((observed total - minimum possible total) / (maximum possible total - minimum possible total)) * 100",
+        domainNormalization: "((observed total - minimum possible total) / (maximum possible total - minimum possible total)) * 100; with the adopted 0–4 scale this equals observed total / maximum possible total * 100",
         interpretation: "Domain percentages are preliminary descriptive scores only. Positive-resource domains also receive a separate inverse risk-oriented score; no overall composite is calculated.",
         validated: false
       },
