@@ -158,7 +158,7 @@ window.FIELD_MIND_ASSESSMENT = {
       id: "dep_08",
       domain: "depression",
       responseScale: "frequency_0_4",
-      text: "شعرت بالبطء أو التململ"
+      text: "شعرت بالبطء أو التوتر والقلق"
     },
     {
       id: "dep_09",
@@ -196,7 +196,7 @@ window.FIELD_MIND_ASSESSMENT = {
       id: "anx_14",
       domain: "anxiety",
       responseScale: "frequency_0_4",
-      text: "شعرت بالتململ"
+      text: "شعرت بالتوتر والقلق"
     },
     {
       id: "anx_15",
