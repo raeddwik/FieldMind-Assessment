@@ -802,7 +802,13 @@ $("export-results-button")?.addEventListener("click", () => {
     const domainsText =
       domains && typeof domains === "object"
         ? Object.entries(domains)
-            .map(([key, value]) => `${key}: ${value}`)
+            .map(([key, value]) => {
+              if (!value || typeof value !== "object") return key + ": " + value;
+              const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
+              const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
+                ? " (درجة عكسية بحثية: " + value.riskOrientedScore.toFixed(1) + "%)" : "";
+              return (value.title || key) + ": " + score + risk;
+            })
             .join("؛ ")
         : "لا توجد درجات مسجلة";
 
