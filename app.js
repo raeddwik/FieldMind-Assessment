@@ -464,16 +464,25 @@ async function setLoggedIn(nextSession) {
       const positiveCriticalLabels = criticalItems
         .filter(item => positiveCriticalIds.includes(item.id))
         .map(item => item.text);
+      // dep_09 is a frequency-scale item about self-harm/suicidal thoughts.
+      // Treat any non-zero response as requiring human follow-up, without assigning a risk level.
+      const selfHarmItem = config.items.find(item => item.id === "dep_09");
+      const selfHarmResponsePositive =
+        typeof answers.dep_09 === "number" && answers.dep_09 > 0;
+      if (selfHarmResponsePositive && selfHarmItem &&
+          !positiveCriticalLabels.includes(selfHarmItem.text)) {
+        positiveCriticalLabels.unshift(selfHarmItem.text);
+      }
       const criticalLine =
-        "مؤشرات تحتاج مراجعة بشرية: " +
+        "مؤشرات المراجعة المنفصلة: " +
         (Number(critical.positiveCount) || 0) + " من " + criticalItems.length +
-        ". هذا العدد ليس تقديرًا لمستوى الخطورة ولا تصنيفًا سريريًا.";
+        ". هذا العدد لا يشمل بند إيذاء النفس ذي مقياس التكرار، وليس تقديرًا لمستوى الخطورة أو تصنيفًا سريريًا.";
 
       const criticalDetails = positiveCriticalLabels.length
-        ? "\nالإجابات الإيجابية التي تحتاج مراجعة:\n- " + positiveCriticalLabels.join("\n- ") +
+        ? "\nالإجابات التي تحتاج مراجعة بشرية:\n- " + positiveCriticalLabels.join("\n- ") +
           "\n\nينبغي أن يراجع مختص مؤهل هذه الإجابات مباشرةً وبسرية وفق الإجراء المعتمد. " +
           "إذا كانت الإجابة المتعلقة بالانتحار أو إيذاء النفس تعكس خطرًا فوريًا حاليًا، فاطلب مساعدة طبية طارئة أو تواصل فورًا مع خدمات الطوارئ المحلية."
-        : "\nلم تُسجّل إجابات إيجابية على مؤشرات المراجعة المنفصلة. هذا لا يستبعد وجود ضيق نفسي أو حاجة إلى الدعم.";
+        : "\nلم تُسجّل إجابات إيجابية على مؤشرات المراجعة المنفصلة أو على بند إيذاء النفس. هذا لا يستبعد وجود ضيق نفسي أو حاجة إلى الدعم.";
 
       $("result-summary").textContent =
         "تم حفظ إجاباتك وحساب الدرجات الوصفية الأولية بنجاح.\n\n" +
