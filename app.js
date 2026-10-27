@@ -733,6 +733,24 @@ $("apply-results-filters")?.addEventListener(
   "click",
   renderFilteredDashboard
 );
+  // التنقل بين صفحات النتائج.
+$("results-prev")?.addEventListener("click", () => {
+  if (dashboardPage > 0) {
+    dashboardPage--;
+    renderFilteredDashboard(false);
+  }
+});
+
+$("results-next")?.addEventListener("click", () => {
+  const totalPages = Math.ceil(
+    visibleDashboardRows.length / dashboardPageSize
+  );
+
+  if (dashboardPage < totalPages - 1) {
+    dashboardPage++;
+    renderFilteredDashboard(false);
+  }
+});
 
   // تحميل قائمة الحسابات من دالة Supabase الآمنة.
   async function loadAdminUsers() {
