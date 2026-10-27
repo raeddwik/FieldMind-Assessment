@@ -298,7 +298,7 @@
       // Provisional linear normalization of the theoretical raw range (-160 to 910)
       // onto 0–100. This is mathematical scaling only, not clinical validation.
       normalizedOPRI = Math.max(0, Math.min(100,
-        Math.round(((rawOPRI + 160) / 10.7) * 100) / 100
+        Math.round(((rawOPRI + 160) / 9.7) * 100) / 100
       ));
       opfScore = Math.round((100 - normalizedOPRI) * 100) / 100;
 
@@ -342,7 +342,7 @@
         opfScore,
         riskLevel,
         recommendedAction,
-        opriNormalization: "(raw OPRI + 160) / 10.7, capped to 0–100",
+        opriNormalization: "(raw OPRI + 160) / 9.7, capped to 0–100",
         opfFormula: "100 - normalized OPRI",
         opriFormula: "Depression%*1.2 + Anxiety%*1.0 + Burnout%*1.3 + Sleep/Fatigue%*1.1 + PsychosocialStress%*1.0 + FunctionalImpact%*1.5 + RedFlags%*2.0 - PositiveMentalHealth%*0.8 - PsychologicalSafety%*0.8",
         opriMeaning: "مؤشر بحثي تجريبي وفق أوزان المسودة؛ لا توجد حدود تفسيرية معتمدة ولا يجوز استخدامه لتشخيص أو قرار وظيفي.",
