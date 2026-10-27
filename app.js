@@ -631,6 +631,109 @@ if (message) {
     }
   }
 });
+  
+function renderFilteredDashboard() {
+  const from = $("results-from")?.value || "";
+  const to = $("results-to")?.value || "";
+  const version = $("results-version")?.value || "";
+  const status = $("results-status")?.value || "";
+
+  visibleDashboardRows = allDashboardRows.filter(row => {
+    const date = row.created_at
+      ? new Date(row.created_at).toISOString().slice(0, 10)
+      : "";
+
+    if (from && (!date || date < from)) return false;
+    if (to && (!date || date > to)) return false;
+    if (version && row.scale_version !== version) return false;
+    if (status && row.result?.status !== status) return false;
+
+    return true;
+  });
+
+  dashboardPage = 0;
+
+  const totalEl = $("results-total");
+  if (totalEl) {
+    totalEl.textContent = String(visibleDashboardRows.length);
+  }
+
+  const usersEl = $("results-users-total");
+  if (usersEl) {
+    usersEl.textContent = String(
+      new Set(
+        visibleDashboardRows
+          .map(row => row.user_id)
+          .filter(Boolean)
+      ).size
+    );
+  }
+
+  const versionsEl = $("results-versions-total");
+  if (versionsEl) {
+    versionsEl.textContent = String(
+      new Set(
+        visibleDashboardRows
+          .map(row => row.scale_version)
+          .filter(Boolean)
+      ).size
+    );
+  }
+
+  const tbody = $("results-rows");
+  if (!tbody) return;
+
+  const start = dashboardPage * dashboardPageSize;
+  const pageRows = visibleDashboardRows.slice(
+    start,
+    start + dashboardPageSize
+  );
+
+  if (!pageRows.length) {
+    tbody.innerHTML =
+      '<tr><td colspan="5">لا توجد نتائج مطابقة للفلاتر.</td></tr>';
+  } else {
+    tbody.innerHTML = pageRows.map(row => {
+      const domains = row.result?.domains;
+
+      const domainsText =
+        domains && typeof domains === "object"
+          ? Object.entries(domains)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join("، ")
+          : "لا توجد درجات مسجلة";
+
+      return `
+        <tr>
+          <td>${escapeHtml(row.created_at
+            ? new Date(row.created_at).toLocaleString("ar-EG")
+            : "—")}</td>
+          <td>${escapeHtml(row.user_id || "—")}</td>
+          <td>${escapeHtml(row.scale_version || "—")}</td>
+          <td>${escapeHtml(row.result?.status || "—")}</td>
+          <td>${escapeHtml(domainsText)}</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  const pageLabel = $("results-page-label");
+  if (pageLabel) {
+    const totalPages = Math.max(
+      1,
+      Math.ceil(visibleDashboardRows.length / dashboardPageSize)
+    );
+
+    pageLabel.textContent =
+      `الصفحة ${dashboardPage + 1} من ${totalPages}`;
+  }
+}
+
+$("apply-results-filters")?.addEventListener(
+  "click",
+  renderFilteredDashboard
+);
+
   // تحميل قائمة الحسابات من دالة Supabase الآمنة.
   async function loadAdminUsers() {
     if (!isSuperAdmin || !db()) return;
