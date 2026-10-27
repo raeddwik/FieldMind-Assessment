@@ -534,41 +534,6 @@
     }
 
     return collected;
-    }
-
-    const collected = [];
-    let offset = 0;
-    const limit = 500;
-    let expectedTotal = null;
-
-    while (true) {
-      const { data, error } = await db().functions.invoke(
-        "fieldmind-superadmin-results",
-        {
-          body: { offset, limit }
-        }
-      );
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      if (!Array.isArray(data?.rows)) {
-        throw new Error("استجابة غير متوقعة من الخادم.");
-      }
-
-      if (expectedTotal === null) {
-        expectedTotal = Number(data.total) || 0;
-      }
-
-      collected.push(...data.rows);
-      offset += data.rows.length;
-
-      if (!data.rows.length || offset >= expectedTotal) {
-        break;
-      }
-    }
-
-    return collected;
   }
   // تحميل قائمة الحسابات من دالة Supabase الآمنة.
   async function loadAdminUsers() {
