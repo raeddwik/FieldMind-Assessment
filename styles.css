@@ -25,3 +25,51 @@
 .admin-collapsible .table-wrap {
   margin-top: 0.75rem;
 }
+
+
+/* ألوان إرشادية لعرض النتائج والتوصيات؛ لا تمثل تشخيصًا طبيًا */
+.status-pill {
+  display: inline-block;
+  padding: .2rem .65rem;
+  border-radius: 999px;
+  font-weight: 700;
+  border: 1px solid currentColor;
+}
+.status-positive {
+  color: #176534;
+  background: #e8f6ec;
+  padding: .12rem .35rem;
+  border-radius: 5px;
+}
+.status-caution {
+  color: #805b00;
+  background: #fff5d6;
+  padding: .12rem .35rem;
+  border-radius: 5px;
+}
+.status-danger {
+  color: #a32626;
+  background: #fdecec;
+  padding: .12rem .35rem;
+  border-radius: 5px;
+}
+.status-critical {
+  color: #fff;
+  background: #a31515;
+  padding: .12rem .35rem;
+  border-radius: 5px;
+}
+.status-neutral {
+  color: #394b50;
+  background: #edf1f2;
+  padding: .12rem .35rem;
+  border-radius: 5px;
+}
+.recommendation-box {
+  padding: .75rem 1rem;
+  margin: .35rem 0 .8rem;
+  border-right: 4px solid currentColor;
+  border-radius: 8px;
+  font-weight: 600;
+  line-height: 1.8;
+}
