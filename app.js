@@ -497,15 +497,23 @@ async function setLoggedIn(nextSession) {
       const indices = calculationResult.experimentalIndices || {};
       const formatIndex = value =>
         typeof value === "number" ? value.toFixed(1) : "غير متاح";
+      const riskClassByLevel = {
+        Low: "status-positive",
+        Moderate: "status-caution",
+        High: "status-danger",
+        Critical: "status-critical"
+      };
+      const riskClass = riskClassByLevel[indices.riskLevel] || "status-neutral";
       const indexSummary = typeof indices.opri === "number" &&
           typeof indices.opfScore === "number"
         ? `
           <section class="index-summary" style="margin:18px 0;padding:16px;border:1px solid #d7dee8;border-radius:10px">
             <h3>المؤشرات الإرشادية الأولية</h3>
-            <p><strong>مستوى اللياقة النفسية المهني (OPF Score):</strong> ${formatIndex(indices.opfScore)} / 100</p>
-            <p><strong>مستوى الخطورة النفسية (OPRI):</strong> ${formatIndex(indices.opri)} / 100</p>
-            <p><strong>مستوى الخطورة:</strong> ${escapeHtml(indices.riskLevel || "غير متاح")}</p>
-            <p><strong>الإجراء المقترح:</strong> ${escapeHtml(indices.recommendedAction || "تُراجع النتيجة مع مختص مؤهل.")}</p>
+            <p><strong>مستوى اللياقة النفسية المهني (OPF Score):</strong> <span class="${indices.opfScore >= 65 ? "status-positive" : indices.opfScore >= 35 ? "status-caution" : "status-danger"}">${formatIndex(indices.opfScore)} / 100</span></p>
+            <p><strong>مستوى الخطورة النفسية (OPRI):</strong> <span class="${riskClass}">${formatIndex(indices.opri)} / 100</span></p>
+            <p><strong>مستوى الخطورة:</strong> <span class="status-pill ${riskClass}">${escapeHtml(indices.riskLevel || "غير متاح")}</span></p>
+            <p><strong>الإجراء المقترح:</strong></p>
+            <div class="recommendation-box ${riskClass}">${escapeHtml(indices.recommendedAction || "تُراجع النتيجة مع مختص مؤهل.")}</div>
             <p class="small">هذه مؤشرات تجريبية إرشادية وليست مقياسًا معتمدًا سريريًا. لا تستخدم وحدها لاتخاذ قرار وظيفي أو لتحديد اللياقة للعمل.</p>
           </section>`
         : '<p>تعذر حساب المؤشرين؛ يرجى مراجعة إعدادات المقياس.</p>';
