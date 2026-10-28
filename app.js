@@ -505,11 +505,11 @@ async function setLoggedIn(nextSession) {
         ? `
           <section class="index-summary" style="margin:18px 0;padding:16px;border:1px solid #d7dee8;border-radius:10px">
             <h3>المؤشرات الإرشادية الأولية</h3>
-            <p><strong>OPF Score:</strong> ${formatIndex(indices.opfScore)} / 100</p>
-            <p><strong>OPRI:</strong> ${formatIndex(indices.opri)} / 100</p>
-            <p><strong>Risk Level:</strong> ${escapeHtml(indices.riskLevel || "غير متاح")}</p>
-            <p><strong>Recommended Action:</strong> ${escapeHtml(indices.recommendedAction || "تُراجع النتيجة مع مختص مؤهل.")}</p>
-            <p class="small">OPRI الخام قبل التطبيع: ${formatIndex(indices.rawOpri)}. التطبيع والحدود تجريبية وغير معتمدة سريريًا.</p>
+            <p><strong>مستوى اللياقة النفسية المهني (OPF Score):</strong> ${formatIndex(indices.opfScore)} / 100</p>
+            <p><strong>مستوى الخطورة النفسية (OPRI):</strong> ${formatIndex(indices.opri)} / 100</p>
+            <p><strong>مستوى الخطورة:</strong> ${escapeHtml(indices.riskLevel || "غير متاح")}</p>
+            <p><strong>الإجراء المقترح:</strong> ${escapeHtml(indices.recommendedAction || "تُراجع النتيجة مع مختص مؤهل.")}</p>
+            <p class="small">هذه مؤشرات تجريبية إرشادية وليست مقياسًا معتمدًا سريريًا. لا تستخدم وحدها لاتخاذ قرار وظيفي أو لتحديد اللياقة للعمل.</p>
           </section>`
         : '<p>تعذر حساب المؤشرين؛ يرجى مراجعة إعدادات المقياس.</p>';
 
@@ -873,8 +873,7 @@ $("export-results-button")?.addEventListener("click", () => {
     "OPF Score",
     "OPRI",
     "Risk Level",
-    "Recommended Action",
-    "الدرجات حسب المجال"
+    "Recommended Action"
   ];
 
   const csvCell = (value) => {
@@ -889,20 +888,6 @@ $("export-results-button")?.addEventListener("click", () => {
   };
 
   const rows = visibleDashboardRows.map((row) => {
-    const domains = row.domains ?? row.result?.domains;
-    const domainsText =
-      domains && typeof domains === "object"
-        ? Object.entries(domains)
-            .map(([key, value]) => {
-              if (!value || typeof value !== "object") return key + ": " + value;
-              const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
-              const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
-                ? " (درجة عكسية بحثية: " + value.riskOrientedScore.toFixed(1) + "%)" : "";
-              return (value.title || key) + ": " + score + risk;
-            })
-            .join("؛ ")
-        : "لا توجد درجات مسجلة";
-
     const indices = row.result?.experimentalIndices ?? row.experimentalIndices ?? {};
     const email = row.email || row.user_email || row.email_address || "";
     const dateOnly = row.created_at
@@ -929,8 +914,7 @@ $("export-results-button")?.addEventListener("click", () => {
       validNormalizedPair ? indices.opfScore.toFixed(1) : "",
       validNormalizedPair ? indices.opri.toFixed(1) : "",
       validNormalizedPair ? (indices.riskLevel || "") : "",
-      validNormalizedPair ? (indices.recommendedAction || "") : "",
-      domainsText
+      validNormalizedPair ? (indices.recommendedAction || "") : ""
     ];
   });
 
