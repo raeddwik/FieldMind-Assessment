@@ -908,6 +908,15 @@ $("export-results-button")?.addEventListener("click", () => {
     const dateOnly = row.created_at
       ? new Date(row.created_at).toLocaleDateString("en-CA")
       : "";
+    // Treat OPF and OPRI as a normalized pair. Legacy raw OPRI values can
+    // fall inside 0–100, so range checking alone cannot identify them.
+    const validNormalizedPair =
+      typeof indices.opfScore === "number" &&
+      Number.isFinite(indices.opfScore) &&
+      indices.opfScore >= 0 && indices.opfScore <= 100 &&
+      typeof indices.opri === "number" &&
+      Number.isFinite(indices.opri) &&
+      indices.opri >= 0 && indices.opri <= 100;
 
     return [
       dateOnly,
@@ -917,22 +926,10 @@ $("export-results-button")?.addEventListener("click", () => {
       )
         ? ""
         : (row.status || row.result?.status || ""),
-      typeof indices.opfScore === "number" &&
-        Number.isFinite(indices.opfScore) &&
-        indices.opfScore >= 0 && indices.opfScore <= 100
-        ? indices.opfScore.toFixed(1) : "",
-      typeof indices.opri === "number" &&
-        Number.isFinite(indices.opri) &&
-        indices.opri >= 0 && indices.opri <= 100
-        ? indices.opri.toFixed(1) : "",
-      typeof indices.opri === "number" &&
-        Number.isFinite(indices.opri) &&
-        indices.opri >= 0 && indices.opri <= 100
-        ? (indices.riskLevel || "") : "",
-      typeof indices.opri === "number" &&
-        Number.isFinite(indices.opri) &&
-        indices.opri >= 0 && indices.opri <= 100
-        ? (indices.recommendedAction || "") : "",
+      validNormalizedPair ? indices.opfScore.toFixed(1) : "",
+      validNormalizedPair ? indices.opri.toFixed(1) : "",
+      validNormalizedPair ? (indices.riskLevel || "") : "",
+      validNormalizedPair ? (indices.recommendedAction || "") : "",
       domainsText
     ];
   });
