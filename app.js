@@ -860,9 +860,13 @@ $("export-results-button")?.addEventListener("click", () => {
 
   const headers = [
     "تاريخ التقييم",
-    "معرف المستخدم",
+    "البريد الإلكتروني",
     "إصدار المقياس",
     "حالة النتيجة",
+    "OPF Score",
+    "OPRI",
+    "Risk Level",
+    "Recommended Action",
     "الدرجات حسب المجال"
   ];
 
@@ -892,13 +896,21 @@ $("export-results-button")?.addEventListener("click", () => {
             .join("؛ ")
         : "لا توجد درجات مسجلة";
 
+    const indices = row.result?.experimentalIndices ?? row.experimentalIndices ?? {};
+    const email = row.email || row.user_email || row.email_address || "";
+    const dateOnly = row.created_at
+      ? new Date(row.created_at).toLocaleDateString("en-CA")
+      : "";
+
     return [
-      row.created_at
-        ? new Date(row.created_at).toLocaleString("ar-EG")
-        : "",
-      row.user_id || "",
+      dateOnly,
+      email,
       row.scale_version || "",
       row.status || row.result?.status || "",
+      typeof indices.opfScore === "number" ? indices.opfScore.toFixed(1) : "",
+      typeof indices.opri === "number" ? indices.opri.toFixed(1) : "",
+      indices.riskLevel || "",
+      indices.recommendedAction || "",
       domainsText
     ];
   });
