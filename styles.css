@@ -3,3 +3,25 @@
 
 /* Usage rights, disclaimer, and authorship notice */
 .legal-panel h2{font-size:1.08rem;margin:1.15rem 0 .45rem}.legal-panel p[lang="en"]{direction:ltr;text-align:left;line-height:1.8}.author-credit{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}.author-credit p{margin:.15rem 0}
+
+
+/* أقسام الإدارة قابلة للطي لتقليل ازدحام لوحة Super Admin */
+.admin-collapsible {
+  margin: 0.75rem 0 1rem;
+  border: 1px solid var(--border, #d8e1e3);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  background: var(--surface, #fff);
+}
+.admin-collapsible > summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--text, #24434a);
+  padding: 0.25rem 0;
+}
+.admin-collapsible[open] > summary {
+  margin-bottom: 0.75rem;
+}
+.admin-collapsible .table-wrap {
+  margin-top: 0.75rem;
+}
