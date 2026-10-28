@@ -101,29 +101,33 @@
     </button>
   </div>
 
-  <h3>سجلات التقييم</h3>
-  <p class="muted small">
-    تُعرض السجلات التي تسمح بها سياسات قاعدة البيانات للحساب الإداري فقط.
-    تجنب تصدير البيانات الحساسة إلا وفق سياسة الشركة.
-  </p>
+  <details class="admin-collapsible">
+    <summary>سجلات التقييم</summary>
+    <p class="muted small">
+      تُعرض السجلات التي تسمح بها سياسات قاعدة البيانات للحساب الإداري فقط.
+      تجنب تصدير البيانات الحساسة إلا وفق سياسة الشركة.
+    </p>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>تاريخ التقييم</th>
-          <th>معرّف المستخدم</th>
-          <th>حالة السجل</th>
-        </tr>
-      </thead>
-      <tbody id="admin-records">
-        <tr><td colspan="3">لا توجد بيانات محملة.</td></tr>
-      </tbody>
-    </table>
-  </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>تاريخ التقييم</th>
+            <th>معرّف المستخدم</th>
+            <th>حالة السجل</th>
+          </tr>
+        </thead>
+        <tbody id="admin-records">
+          <tr><td colspan="3">لا توجد بيانات محملة.</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-  <p id="admin-message" class="message" role="status"></p>
+    <p id="admin-message" class="message" role="status"></p>
+  </details>
 
+  <details class="admin-collapsible results-collapsible">
+  <summary>تفصيلات تحليل نتائج التقييمات</summary>
   <section id="results-dashboard" class="hidden" aria-labelledby="results-title">
     <hr>
     <div class="section-heading">
@@ -174,6 +178,7 @@
       <button id="results-next" type="button" class="secondary" disabled>التالي</button>
     </div>
   </section>
+  </details>
 
   <hr>
 
