@@ -692,7 +692,11 @@ if (tbody) {
           : "—")}</td>
         <td>${escapeHtml(row.user_id || "—")}</td>
         <td>${escapeHtml(row.scale_version || "—")}</td>
-        <td>${escapeHtml(row.status || row.result?.status || "—")}</td>
+        <td>${escapeHtml(
+          (row.status || row.result?.status) === "calculation_preview_only"
+            ? ""
+            : (row.status || row.result?.status || "—")
+        )}</td>
         <td>${escapeHtml(domainsText)}</td>
       </tr>
     `;
@@ -798,7 +802,11 @@ if (resetPage) dashboardPage = 0;
             : "—")}</td>
           <td>${escapeHtml(row.user_id || "—")}</td>
           <td>${escapeHtml(row.scale_version || "—")}</td>
-          <td>${escapeHtml(row.status || row.result?.status || "—")}</td>
+          <td>${escapeHtml(
+          (row.status || row.result?.status) === "calculation_preview_only"
+            ? ""
+            : (row.status || row.result?.status || "—")
+        )}</td>
           <td>${escapeHtml(domainsText)}</td>
         </tr>
       `;
@@ -861,7 +869,6 @@ $("export-results-button")?.addEventListener("click", () => {
   const headers = [
     "تاريخ التقييم",
     "البريد الإلكتروني",
-    "إصدار المقياس",
     "حالة النتيجة",
     "OPF Score",
     "OPRI",
@@ -905,8 +912,9 @@ $("export-results-button")?.addEventListener("click", () => {
     return [
       dateOnly,
       email,
-      row.scale_version || "",
-      row.status || row.result?.status || "",
+      (row.status || row.result?.status) === "calculation_preview_only"
+        ? ""
+        : (row.status || row.result?.status || ""),
       typeof indices.opfScore === "number" ? indices.opfScore.toFixed(1) : "",
       typeof indices.opri === "number" ? indices.opri.toFixed(1) : "",
       indices.riskLevel || "",
