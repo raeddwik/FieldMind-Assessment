@@ -912,13 +912,27 @@ $("export-results-button")?.addEventListener("click", () => {
     return [
       dateOnly,
       email,
-      (row.status || row.result?.status) === "calculation_preview_only"
+      ["calculation_preview_only", "pending_scale_configuration"].includes(
+        row.status || row.result?.status
+      )
         ? ""
         : (row.status || row.result?.status || ""),
-      typeof indices.opfScore === "number" ? indices.opfScore.toFixed(1) : "",
-      typeof indices.opri === "number" ? indices.opri.toFixed(1) : "",
-      indices.riskLevel || "",
-      indices.recommendedAction || "",
+      typeof indices.opfScore === "number" &&
+        Number.isFinite(indices.opfScore) &&
+        indices.opfScore >= 0 && indices.opfScore <= 100
+        ? indices.opfScore.toFixed(1) : "",
+      typeof indices.opri === "number" &&
+        Number.isFinite(indices.opri) &&
+        indices.opri >= 0 && indices.opri <= 100
+        ? indices.opri.toFixed(1) : "",
+      typeof indices.opri === "number" &&
+        Number.isFinite(indices.opri) &&
+        indices.opri >= 0 && indices.opri <= 100
+        ? (indices.riskLevel || "") : "",
+      typeof indices.opri === "number" &&
+        Number.isFinite(indices.opri) &&
+        indices.opri >= 0 && indices.opri <= 100
+        ? (indices.recommendedAction || "") : "",
       domainsText
     ];
   });
