@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.fieldmind-superadmin-results]
 verify_jwt = true
+
+[functions.fieldmind-submit-assessment]
+verify_jwt = true
