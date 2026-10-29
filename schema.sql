@@ -6,7 +6,7 @@ create extension if not exists pgcrypto;
 
 create table if not exists public.user_roles (
   user_id uuid primary key references auth.users(id) on delete cascade,
-  role text not null check (role in ('admin', 'occupational_health', 'worker')),
+  role text not null check (role in ('super_admin', 'admin', 'occupational_health', 'worker')),
   created_at timestamptz not null default now()
 );
 
@@ -46,7 +46,7 @@ set search_path = ''
 as $$
   select exists (
     select 1 from public.user_roles r
-    where r.user_id = (select auth.uid()) and r.role = 'admin'
+    where r.user_id = (select auth.uid()) and r.role in ('admin', 'super_admin')
   );
 $$;
 
