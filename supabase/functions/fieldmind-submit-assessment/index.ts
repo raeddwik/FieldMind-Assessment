@@ -78,8 +78,8 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
   const authorization = req.headers.get("Authorization");
   if (!authorization?.startsWith("Bearer ")) return reply({ error: "Authentication required" }, 401);
-  const supabaseUrl = Deno.env.get("SUPABASE_URL"), anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!supabaseUrl || !anonKey) return reply({ error: "Server configuration incomplete" }, 500);
+  const supabaseUrl = Deno.env.get("SUPABASE_URL"), anonKey = Deno.env.get("SUPABASE_ANON_KEY"), serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !anonKey || !serviceRoleKey) return reply({ error: "Server configuration incomplete" }, 500);
   const token = authorization.slice(7);
   const client = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: "Bearer " + token } }, auth: { persistSession: false, autoRefreshToken: false } });
   const { data: authData, error: authError } = await client.auth.getUser(token);
@@ -102,7 +102,8 @@ Deno.serve(async (req) => {
   }
   const normalized = answers as Record<string, number>;
   const result = calculate(normalized);
-  const { data: inserted, error: insertError } = await client.from("assessments")
+  const serviceClient = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: inserted, error: insertError } = await serviceClient.from("assessments")
     .insert({ user_id: authData.user.id, scale_version: CONFIG.version, answers: normalized, result, consent_given: body.consent_given })
     .select("id,created_at").single();
   if (insertError || !inserted) return reply({ error: "Unable to save assessment" }, 500);
