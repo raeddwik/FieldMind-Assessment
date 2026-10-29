@@ -35,7 +35,7 @@ Deno.serve(async(req:Request)=>{
  const items = CONFIG.items as readonly any[];
  const criticalItems = items.filter(item => item.domain === "critical_indicators");
  const positiveItemIds = criticalItems.filter(item => answers[item.id] === 1).map(item => item.id);
- const declined = items.filter(item => item.domain === "critical_indicators" && answers[item.id] === 2);
+ const declined = criticalItems.filter(item => answers[item.id] === 2);
  const declinedCount = declined.length;
  const declinedItemIds = declined.map(item => item.id);
  const safetyStatus = positiveItemIds.length
