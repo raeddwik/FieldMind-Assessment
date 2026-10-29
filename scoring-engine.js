@@ -30,7 +30,7 @@
     for (const domain of config.domains) {
       if (domain.id === "critical_indicators") continue;
       const items = config.items.filter(item => item.domain === domain.id);
-      const positiveItems = items.filter(item => answers[item.id] > 0);
+      const positiveItems = items.filter(item => answers[item.id] === 1);
       if (domain.kind === "flag") {
         domains[domain.id] = {
           title: domain.title,
@@ -45,8 +45,16 @@
       const values = items.map(item => answers[item.id]);
       const average = values.reduce((sum, value) => sum + value, 0) / Math.max(values.length, 1);
       let descriptiveBand = "تكرار مُبلّغ عنه أقل في هذه الإجابات";
-      if (average >= 2.5) descriptiveBand = "تكرار مُبلّغ عنه أعلى نسبيًا؛ يستحق مراجعة";
-      else if (average >= 1.5) descriptiveBand = "تكرار مُبلّغ عنه متوسط؛ قد تستفيد من المتابعة";
+      if (domain.kind === "agreement") {
+        descriptiveBand = average < 2
+          ? "مستوى موافقة أقل؛ قد يفيد استكشاف ظروف العمل"
+          : average >= 3
+            ? "مستوى موافقة أعلى على عبارات الرضا"
+            : "مستوى موافقة متوسط على عبارات الرضا";
+      } else {
+        if (average >= 2.5) descriptiveBand = "تكرار مُبلّغ عنه أعلى نسبيًا؛ يستحق مراجعة";
+        else if (average >= 1.5) descriptiveBand = "تكرار مُبلّغ عنه متوسط؛ قد تستفيد من المتابعة";
+      }
       domains[domain.id] = {
         title: domain.title,
         kind: domain.kind,
