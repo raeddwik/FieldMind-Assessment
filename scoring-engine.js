@@ -1,369 +1,150 @@
-
-/*
- * FieldMind — Preliminary Scoring Engine
- * COPHAS-1.0-DRAFT
- *
- * Technical preview only.
- * Preliminary domain normalization using the configured scale minimum and maximum.
- * NOT a validated clinical scoring system.
- * No diagnosis, clinical classification, or fitness-for-work decision.
+/* FieldMind — Internal follow-up rules, draft only.
+ * No diagnosis, clinical severity grading, or fitness-for-work determination.
  */
-
 (function () {
   "use strict";
 
-  const CRITICAL_DOMAIN = "critical_indicators";
-
-  // Positive-resource domains are additionally expressed as risk-oriented scores.
-  // Their original domain score remains unchanged and interpretable as positive endorsement.
-  const POSITIVE_RESOURCE_DOMAINS = new Set([
-    "psychological_safety",
-    "positive_mental_health",
-    "job_satisfaction"
-  ]);
-
-  function getConfiguration() {
+  function calculate(answers) {
     const config = window.FIELD_MIND_ASSESSMENT;
-
-    if (!config || !Array.isArray(config.items)) {
+    if (!config || !Array.isArray(config.items) || !Array.isArray(config.domains)) {
       throw new Error("Assessment configuration is unavailable.");
     }
-
-    if (!Array.isArray(config.domains)) {
-      throw new Error("Assessment domains are unavailable.");
-    }
-
-    if (!config.responseScales || typeof config.responseScales !== "object") {
-      throw new Error("Response scales are unavailable.");
-    }
-
-    // Clinical scoring must remain disabled during this preview.
-    if (config.scoring?.enabled !== false) {
-      throw new Error(
-        "Technical preview requires scoring.enabled to be false."
-      );
-    }
-
-    return config;
-  }
-
-  function getScaleBounds(scale) {
-    if (!Array.isArray(scale) || scale.length === 0) {
-      throw new Error("Invalid response scale.");
-    }
-
-    const values = scale.map(option => option.value);
-
-    if (
-      !values.every(
-        value => typeof value === "number" && Number.isFinite(value)
-      )
-    ) {
-      throw new Error("Response scale contains invalid values.");
-    }
-
-    if (new Set(values).size !== values.length) {
-      throw new Error("Response scale contains duplicate values.");
-    }
-
-    return {
-      min: Math.min(...values),
-      max: Math.max(...values),
-      allowed: values
-    };
-  }
-
-  function calculate(answers) {
-    const config = getConfiguration();
-
-    if (
-      !answers ||
-      typeof answers !== "object" ||
-      Array.isArray(answers)
-    ) {
+    if (!answers || typeof answers !== "object" || Array.isArray(answers)) {
       throw new Error("Answers must be an object.");
     }
 
-    const itemIds = new Set();
-    const domainIds = new Set();
-    const errors = [];
-
-    for (const domain of config.domains) {
-      if (!domain.id || domainIds.has(domain.id)) {
-        throw new Error("Missing or duplicate domain ID.");
-      }
-
-      domainIds.add(domain.id);
-    }
-
-    for (const item of config.items) {
-      if (!item.id || itemIds.has(item.id)) {
-        throw new Error("Missing or duplicate item ID.");
-      }
-
-      itemIds.add(item.id);
-
-      if (!domainIds.has(item.domain)) {
-        errors.push(
-          "Item references an unknown domain: " + item.id
-        );
-      }
-    }
-
-    if (errors.length > 0) {
-      return {
-        status: "invalid_or_incomplete",
-        errors
-      };
-    }
-
-    const normalizedAnswers = {};
-    const scales = {};
-
-    // Validate every configured item before calculating scores.
+    const allowed = {};
     for (const item of config.items) {
       const scale = config.responseScales[item.responseScale];
-
-      if (!scale) {
-        errors.push("Missing response scale: " + item.id);
-        continue;
+      if (!item.id || !scale || Object.prototype.hasOwnProperty.call(allowed, item.id)) {
+        throw new Error("Invalid item configuration: " + item.id);
       }
-
-      let bounds;
-
-      try {
-        bounds = getScaleBounds(scale);
-      } catch (error) {
-        errors.push(item.id + ": " + error.message);
-        continue;
+      allowed[item.id] = new Set(scale.map(option => option.value));
+      if (!Object.prototype.hasOwnProperty.call(answers, item.id) ||
+          !allowed[item.id].has(answers[item.id])) {
+        return { status: "invalid_or_incomplete", errors: ["إجابة ناقصة أو غير صالحة: " + item.id] };
       }
-
-      scales[item.id] = bounds;
-
-      if (!Object.prototype.hasOwnProperty.call(answers, item.id)) {
-        errors.push("Missing answer: " + item.id);
-        continue;
-      }
-
-      const value = answers[item.id];
-
-      if (
-        typeof value !== "number" ||
-        !Number.isFinite(value) ||
-        !bounds.allowed.includes(value)
-      ) {
-        errors.push("Invalid answer: " + item.id);
-        continue;
-      }
-
-      // Keep raw item responses unchanged. Direction adjustments are applied only
-      // as a separate descriptive view for positive-resource domains below.
-      normalizedAnswers[item.id] = value;
     }
 
-    if (errors.length > 0) {
-      return {
-        status: "invalid_or_incomplete",
-        errors
-      };
-    }
-
-    const domainResults = {};
-
+    const domains = {};
     for (const domain of config.domains) {
-      if (domain.id === CRITICAL_DOMAIN) {
-        continue;
-      }
-
-      const items = config.items.filter(
-        item => item.domain === domain.id
-      );
-
-      if (items.length === 0) {
-        domainResults[domain.id] = {
+      if (domain.id === "critical_indicators") continue;
+      const items = config.items.filter(item => item.domain === domain.id);
+      const positiveItems = items.filter(item => answers[item.id] > 0);
+      if (domain.kind === "flag") {
+        domains[domain.id] = {
           title: domain.title,
-          scoreDirection: domain.scoreDirection || "not_specified",
-          scoreMeaning: domain.scoreMeaning || null,
-          status: "no_items",
-          interpretation: "not_assigned",
-          scoringValidated: false
+          kind: "flag",
+          positiveCount: positiveItems.length,
+          positiveItemIds: positiveItems.map(item => item.id),
+          status: positiveItems.length ? "needs_specialist_review" : "no_flagged_response",
+          interpretation: "إجابات للاستضاح المتخصص فقط؛ لا تثبت أو تنفي تشخيصًا."
         };
-
         continue;
       }
-
-      let total = 0;
-      let minimumTotal = 0;
-      let maximumTotal = 0;
-
-      for (const item of items) {
-        const bounds = scales[item.id];
-
-        total += normalizedAnswers[item.id];
-        minimumTotal += bounds.min;
-        maximumTotal += bounds.max;
-      }
-
-      const range = maximumTotal - minimumTotal;
-
-      if (range <= 0) {
-        domainResults[domain.id] = {
-          title: domain.title,
-          scoreDirection: domain.scoreDirection || "not_specified",
-          scoreMeaning: domain.scoreMeaning || null,
-          status: "invalid_scale",
-          interpretation: "not_assigned",
-          scoringValidated: false
-        };
-
-        continue;
-      }
-
-      // Scale-aware normalization maps the configured minimum to 0 and maximum to 100.
-      // With the adopted 0–4 scale, this equals observed total / maximum possible total * 100.
-      const score = ((total - minimumTotal) / range) * 100;
-      const roundedScore = Math.round(score * 100) / 100;
-      const riskOrientedScore = POSITIVE_RESOURCE_DOMAINS.has(domain.id)
-        ? Math.round((100 - score) * 100) / 100
-        : roundedScore;
-
-      domainResults[domain.id] = {
+      const values = items.map(item => answers[item.id]);
+      const average = values.reduce((sum, value) => sum + value, 0) / Math.max(values.length, 1);
+      let descriptiveBand = "تكرار مُبلّغ عنه أقل في هذه الإجابات";
+      if (average >= 2.5) descriptiveBand = "تكرار مُبلّغ عنه أعلى نسبيًا؛ يستحق مراجعة";
+      else if (average >= 1.5) descriptiveBand = "تكرار مُبلّغ عنه متوسط؛ قد تستفيد من المتابعة";
+      domains[domain.id] = {
         title: domain.title,
-        score: roundedScore,
-        scoreMethod: "min_max_0_100",
-        riskOrientedScore,
-        riskOrientedScoreMeaning: POSITIVE_RESOURCE_DOMAINS.has(domain.id)
-          ? "عكس درجة الموارد الإيجابية لأغراض العرض البحثي فقط؛ ليست درجة سريرية معتمدة."
-          : "درجة مطبّعة حسب اتجاه الأعراض أو الصعوبات؛ ليست تصنيفًا سريريًا.",
-        scoreDirection: domain.scoreDirection || "not_specified",
-        scoreMeaning: domain.scoreMeaning || null,
-        answeredItems: items.length,
-        status: "preliminary_normalized_score",
-        interpretation: "not_assigned",
-        scoringValidated: false
+        kind: domain.kind,
+        average: Math.round(average * 100) / 100,
+        responseRange: "0–4",
+        descriptiveBand,
+        status: "descriptive_only",
+        interpretation: domain.id === "job_satisfaction"
+          ? "متوسط الموافقة على عبارات الرضا؛ ليس مقياسًا معتمدًا."
+          : "متوسط تكرار الإجابات؛ ليس درجة شدة سريرية ولا تشخيصًا."
       };
     }
 
-    // Critical indicators are counted separately.
-    // This count is NOT a clinical risk classification.
-    const criticalItems = config.items.filter(
-      item => item.domain === CRITICAL_DOMAIN
-    );
+    const criticalItems = config.items.filter(item => item.domain === "critical_indicators");
+    const positiveSafetyItems = criticalItems.filter(item => answers[item.id] === 1);
+    const immediateDanger = positiveSafetyItems.some(item => item.safetyType === "immediate_danger");
+    const selfHarmThoughts = positiveSafetyItems.some(item => item.safetyType === "self_harm");
+    const specialistFlags = ["bipolar_indicators", "psychosis_indicators"]
+      .flatMap(id => domains[id]?.positiveItemIds || []);
+    const elevatedDomains = Object.entries(domains)
+      .filter(([id, result]) => id !== "job_satisfaction" &&
+        typeof result.average === "number" && result.average >= 2.5)
+      .map(([id]) => id);
+    const moderateDomains = Object.entries(domains)
+      .filter(([id, result]) => id !== "job_satisfaction" &&
+        typeof result.average === "number" && result.average >= 1.5)
+      .map(([id]) => id);
+    const functionalAverage = domains.functional_impact?.average ?? 0;
+    const satisfactionAverage = domains.job_satisfaction?.average ?? null;
 
-    const positiveCriticalItems = criticalItems
-      .filter(item => normalizedAnswers[item.id] === 1)
-      .map(item => item.id);
-
-    // Experimental OPRI calculation follows the draft formula in the author's
-    // questionnaire. Red Flags % is provisionally defined as positive yes/no
-    // critical items / all configured yes/no critical items * 100.
-    // This convention and all weights remain unvalidated; no cutoffs are applied.
-    const domainScore = id => domainResults[id]?.score;
-    const domainRiskScore = id =>
-      POSITIVE_RESOURCE_DOMAINS.has(id)
-        ? domainResults[id]?.riskOrientedScore
-        : domainResults[id]?.score;
-
-    const requiredIndexDomains = [
-      "depression", "anxiety", "burnout", "sleep_fatigue",
-      "psychosocial_stress", "functional_impact",
-      "positive_mental_health", "psychological_safety"
-    ];
-    const indexInputsAvailable = requiredIndexDomains.every(
-      id => Number.isFinite(domainScore(id))
-    ) && criticalItems.length > 0;
-
-    let rawOPRI = null;
-    let normalizedOPRI = null;
-    let opfScore = null;
-    let riskLevel = null;
-    let recommendedAction = null;
-    let redFlagsPercentage = null;
-
-    if (indexInputsAvailable) {
-      redFlagsPercentage =
-        Math.round((positiveCriticalItems.length / criticalItems.length) * 10000) / 100;
-      rawOPRI = Math.round((
-        domainScore("depression") * 1.2 +
-        domainScore("anxiety") * 1.0 +
-        domainScore("burnout") * 1.3 +
-        domainScore("sleep_fatigue") * 1.1 +
-        domainScore("psychosocial_stress") * 1.0 +
-        domainScore("functional_impact") * 1.5 +
-        redFlagsPercentage * 2.0 -
-        domainScore("positive_mental_health") * 0.8 -
-        domainScore("psychological_safety") * 0.8
-      ) * 100) / 100;
-
-      // Provisional linear normalization of the theoretical raw range (-160 to 910)
-      // onto 0–100. This is mathematical scaling only, not clinical validation.
-      normalizedOPRI = Math.max(0, Math.min(100,
-        Math.round(((rawOPRI + 160) / 9.7) * 100) / 100
-      ));
-      opfScore = Math.round((100 - normalizedOPRI) * 100) / 100;
-
-      if (normalizedOPRI >= 80) {
-        riskLevel = "Critical";
-        recommendedAction = "تقييم مهني عاجل، والتدخل السريري المناسب، ومتابعة مكثفة.";
-      } else if (normalizedOPRI >= 65) {
-        riskLevel = "High";
-        recommendedAction = "الإحالة إلى مختص مناسب في الصحة النفسية وتقييم القدرة الوظيفية.";
-      } else if (normalizedOPRI >= 35) {
-        riskLevel = "Moderate";
-        recommendedAction = "إعادة التقييم خلال نحو 3 أشهر ومراجعة العوامل ذات الصلة في بيئة العمل.";
-      } else {
-        riskLevel = "Low";
-        recommendedAction = "متابعة دورية وتعزيز الصحة والوقاية.";
-      }
+    let followUpLevel = "routine";
+    let followUpLabel = "متابعة اعتيادية وإتاحة طلب المساعدة";
+    let recommendation = "لا تظهر في هذه الإجابات وحدها مؤشرات مرتفعة وفق قواعد النسخة التجريبية. يمكن للعامل طلب الدعم في أي وقت.";
+    if (moderateDomains.length || (satisfactionAverage !== null && satisfactionAverage < 2)) {
+      followUpLevel = "offer_support";
+      followUpLabel = "عرض الدعم والمتابعة";
+      recommendation = "يُفضّل عرض تواصل سري وغير عقابي مع مسؤول صحة مهنية مؤهل أو مختص مناسب، ومناقشة الضغوط أو الدعم المطلوب. هذه النتيجة ليست تشخيصًا.";
+    }
+    if (elevatedDomains.length || functionalAverage >= 2.5 || specialistFlags.length) {
+      followUpLevel = "specialist_review";
+      followUpLabel = "اقتراح مراجعة مختص";
+      recommendation = "يُوصى بالتواصل بسرية مع العامل وعرض تقييم لدى مختص نفسي أو طبي مناسب. الإجابات المتعلقة بتغيرات المزاج والطاقة أو الخبرات الإدراكية تستدعي استيضاحًا متخصصًا ولا تثبت اضطرابًا بعينه.";
+    }
+    if (selfHarmThoughts) {
+      followUpLevel = "prompt_human_review";
+      followUpLabel = "مراجعة بشرية مباشرة في أقرب وقت";
+      recommendation = "تستلزم الإجابة تواصلًا بشريًا مباشرًا وسريًا من شخص مؤهل للتحقق من السلامة الحالية وعرض المساعدة. لا يُستنتج مستوى الخطر من الاستبيان وحده.";
+    }
+    if (immediateDanger) {
+      followUpLevel = "urgent_safety";
+      followUpLabel = "مسار سلامة عاجل";
+      recommendation = "يجب تفعيل إجراء السلامة المعتمد فورًا، والتواصل مباشرةً مع العامل لتحديد احتياجاته الحالية بواسطة شخص مؤهل، وطلب المساعدة الطبية الطارئة عند وجود خطر وشيك. لا تترك الشخص دون دعم مناسب.";
     }
 
+    const positiveSafetyItemIds = positiveSafetyItems.map(item => item.id);
     return {
       status: "calculation_preview_only",
-      scoringMethod: {
-        domainNormalization: "((observed total - minimum possible total) / (maximum possible total - minimum possible total)) * 100; with the adopted 0–4 scale this equals observed total / maximum possible total * 100",
-        interpretation: "Domain percentages are preliminary descriptive scores only. Positive-resource domains also receive a separate inverse risk-oriented score.",
+      scaleVersion: config.version,
+      domains,
+      followUp: {
+        level: followUpLevel,
+        label: followUpLabel,
+        recommendation,
+        elevatedDomains,
+        moderateDomains,
+        specialistFlagItemIds: specialistFlags,
+        selfHarmThoughts,
+        immediateDanger,
+        ruleSet: "internal-pilot-v1",
         validated: false
       },
-      scaleVersion: config.version,
-      domains: domainResults,
       criticalIndicators: {
-        status: "requires_review",
-        positiveCount: positiveCriticalItems.length,
+        status: positiveSafetyItems.length ? "requires_human_review" : "no_positive_response_recorded",
+        positiveCount: positiveSafetyItems.length,
         totalItems: criticalItems.length,
-        positiveItemIds: positiveCriticalItems,
-        provisionalPercentage: redFlagsPercentage,
-        percentageMethod: "positive yes/no critical items / total yes/no critical items * 100; provisional convention for pilot analysis only",
+        positiveItemIds: positiveSafetyItemIds,
+        immediateDanger,
+        selfHarmThoughts,
         clinicalInterpretation: null
       },
       experimentalIndices: {
-        status: indexInputsAvailable ? "experimental_not_validated" : "not_calculated_missing_inputs",
-        opri: normalizedOPRI,
-        rawOpri: rawOPRI,
-        opfScore,
-        riskLevel,
-        recommendedAction,
-        opriNormalization: "(raw OPRI + 160) / 9.7, capped to 0–100",
-        opfFormula: "100 - normalized OPRI",
-        opriFormula: "Depression%*1.2 + Anxiety%*1.0 + Burnout%*1.3 + Sleep/Fatigue%*1.1 + PsychosocialStress%*1.0 + FunctionalImpact%*1.5 + RedFlags%*2.0 - PositiveMentalHealth%*0.8 - PsychologicalSafety%*0.8",
-        opriMeaning: "مؤشر بحثي تجريبي وفق أوزان المسودة؛ لا توجد حدود تفسيرية معتمدة ولا يجوز استخدامه لتشخيص أو قرار وظيفي.",
-        assumptions: [
-          "Red Flags % حُسبت مؤقتًا كنسبة الإجابات الإيجابية من أسئلة نعم/لا الحرجة الثمانية.",
-          "لم تُضف درجة الرضا الوظيفي إلى OPRI لأن معادلة المسودة لا تذكرها.",
-          "حُسب OPF مؤقتًا بوصفه 100 ناقص OPRI بعد تطبيع OPRI إلى نطاق 0–100؛ التحويل والأوزان والحدود غير معتمدة وتحتاج إلى تحقق."
-        ],
+        status: "retired",
+        opri: null,
+        rawOpri: null,
+        opfScore: null,
+        riskLevel: null,
+        recommendedAction: null,
         validated: false,
-        classificationEnabled: true,
-        classificationStatus: "experimental_not_validated"
+        classificationEnabled: false,
+        note: "تم إيقاف OPRI وOPF؛ لا يستخدم مؤشر إجمالي لاتخاذ قرار المتابعة."
       },
       overallClinicalScore: null,
-      classification: riskLevel,
-      recommendations: recommendedAction,
+      classification: null,
+      recommendations: recommendation,
       clinicalValidation: "not_established",
       previewOnly: true
     };
   }
 
-  window.FIELD_MIND_SCORING_ENGINE = Object.freeze({
-    calculate
-  });
+  window.FIELD_MIND_SCORING_ENGINE = Object.freeze({ calculate });
 })();
