@@ -22,7 +22,7 @@ Deno.serve(async(req:Request)=>{
  let body:any;try{body=await req.json();}catch{return reply(req,{error:"Invalid JSON body"},400);}
  if(!body||typeof body!=="object"||Array.isArray(body))return reply(req,{error:"Invalid JSON body"},400);
  if(body.scale_version!==CONFIG.version)return reply(req,{error:"Unsupported questionnaire version"},400);
- if(body.consent_given!==true)return reply(req,{error:"Consent is required"},400);
+ if (body.consent_given !== true)return reply(req,{error:"Consent is required"},400);
  const answers=body.answers;
  if(!answers||typeof answers!=="object"||Array.isArray(answers))return reply(req,{error:"Invalid answers"},400);
  const ids=CONFIG.items.map((item:any)=>item.id);
