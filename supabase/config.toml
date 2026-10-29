@@ -1,0 +1,7 @@
+# Supabase CLI configuration for FieldMind.
+# Privileged functions also verify the caller and role inside their handlers.
+[functions.fieldmind-admin-users]
+verify_jwt = true
+
+[functions.fieldmind-superadmin-results]
+verify_jwt = true
