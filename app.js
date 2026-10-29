@@ -364,6 +364,15 @@ async function setLoggedIn(nextSession) {
       );
     }
 
+    // لا يكفي إخفاء شاشة الموافقة بعد البدء؛ نتحقق من الموافقة الصريحة مجددًا قبل الإرسال.
+    if (!$("consent")?.checked) {
+      return message(
+        "form-message",
+        "يرجى تأكيد الموافقة على معالجة الإجابات قبل إرسال التقييم.",
+        true
+      );
+    }
+
     if (!db() || !session) {
       return message(
         "form-message",
@@ -382,7 +391,7 @@ async function setLoggedIn(nextSession) {
           body: {
             scale_version: config.version,
             answers: answers,
-            consent_given: true
+            consent_given: $("consent").checked
           }
         }
       );
