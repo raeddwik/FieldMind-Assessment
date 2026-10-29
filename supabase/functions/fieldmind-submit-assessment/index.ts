@@ -84,13 +84,14 @@ Deno.serve(async (req) => {
   const client = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: "Bearer " + token } }, auth: { persistSession: false, autoRefreshToken: false } });
   const { data: authData, error: authError } = await client.auth.getUser(token);
   if (authError || !authData.user) return reply({ error: "Invalid session" }, 401);
-  let body: { answers?: unknown; scale_version?: unknown };
+  let body: { answers?: unknown; scale_version?: unknown; consent_given?: unknown };
   try {
     const parsed: unknown = await req.json();
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return reply({ error: "Invalid JSON body" }, 400);
-    body = parsed as { answers?: unknown; scale_version?: unknown };
+    body = parsed as { answers?: unknown; scale_version?: unknown; consent_given?: unknown };
   } catch { return reply({ error: "Invalid JSON body" }, 400); }
   if (body.scale_version !== CONFIG.version) return reply({ error: "Unsupported questionnaire version" }, 400);
+  if (body.consent_given !== true) return reply({ error: "Consent is required" }, 400);
   if (!body.answers || typeof body.answers !== "object" || Array.isArray(body.answers)) return reply({ error: "Invalid answers" }, 400);
   const answers = body.answers as Record<string, unknown>;
   const ids = CONFIG.items.map(item => item.id);
@@ -102,7 +103,7 @@ Deno.serve(async (req) => {
   const normalized = answers as Record<string, number>;
   const result = calculate(normalized);
   const { data: inserted, error: insertError } = await client.from("assessments")
-    .insert({ user_id: authData.user.id, scale_version: CONFIG.version, answers: normalized, result, consent_given: true })
+    .insert({ user_id: authData.user.id, scale_version: CONFIG.version, answers: normalized, result, consent_given: body.consent_given })
     .select("id,created_at").single();
   if (insertError || !inserted) return reply({ error: "Unable to save assessment" }, 500);
   return reply({ ok: true, assessment: inserted, result });
