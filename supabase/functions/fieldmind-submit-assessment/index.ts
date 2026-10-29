@@ -27,14 +27,22 @@ Deno.serve(async(req:Request)=>{
  if(!answers||typeof answers!=="object"||Array.isArray(answers))return reply(req,{error:"Invalid answers"},400);
  const ids=CONFIG.items.map((item:any)=>item.id);
  if(Object.keys(answers).length!==ids.length||ids.some(id=>!Object.prototype.hasOwnProperty.call(answers,id)))return reply(req,{error:"Answers are incomplete or contain unexpected fields"},400);
- for(const item of CONFIG.items as any[]){
+ for(const item of CONFIG.items as readonly any[]){
    const value=answers[item.id];
    const max=item.scale==="yes_no_optional"?2:4;
    if(!Number.isInteger(value)||value<0||value>max)return reply(req,{error:"Invalid answer value"},400);
  }
- const criticalItems=(CONFIG.items as any[]).filter(item=>item.domain==="critical_indicators");
- const positiveItemIds=criticalItems.filter(item=>answers[item.id]===1).map(item=>item.id);
- const declinedCount=criticalItems.filter(item=>answers[item.id]===2).length;
+ const items = CONFIG.items as readonly any[];
+ const criticalItems = items.filter(item => item.domain === "critical_indicators");
+ const positiveItemIds = criticalItems.filter(item => answers[item.id] === 1).map(item => item.id);
+ const declined = items.filter(item => item.domain === "critical_indicators" && answers[item.id] === 2);
+ const declinedCount = declined.length;
+ const declinedItemIds = declined.map(item => item.id);
+ const safetyStatus = positiveItemIds.length
+   ? "requires_human_review"
+   : declinedCount > 0
+     ? "answer_declined"
+     : "no_automated_classification";
  const result={
    status:"calculation_preview_only",
    scaleVersion:CONFIG.version,
@@ -44,7 +52,7 @@ Deno.serve(async(req:Request)=>{
      label:positiveItemIds.length?"توجد إجابة تستلزم مراجعة بشرية":"لم يتم إصدار توصية آلية",
      recommendation:positiveItemIds.length?"يرجى تفعيل مسار دعم بشري مناسب بسرعة، مع مراعاة السلامة والخصوصية.":"تُراجع الإجابات مع مختص مؤهل عند الحاجة. لا تُستخدم هذه النتيجة وحدها لاتخاذ قرار طبي أو وظيفي."
    },
-   criticalIndicators:{positiveItemIds,declinedCount,status:positiveItemIds.length?"requires_human_review":"no_automated_classification"},
+   criticalIndicators:{positiveItemIds,declinedCount,declinedItemIds,status:safetyStatus},
    overallClinicalScore:null,
    classification:null,
    clinicalValidation:"not_established",
