@@ -1,0 +1,39 @@
+name: Validate FieldMind draft
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [fieldmind-internal-screening-v1]
+
+permissions:
+  contents: read
+
+jobs:
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check assessment-config.js
+          node --check scoring-engine.js
+          node --check supabase.js
+      - name: Test assessment engine
+        run: node tests/assessment-engine.test.cjs
+
+  edge-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check privileged Edge Functions
+        run: |
+          deno check supabase/functions/fieldmind-admin-users/index.ts
+          deno check supabase/functions/fieldmind-superadmin-results/index.ts
