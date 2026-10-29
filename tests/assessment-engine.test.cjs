@@ -62,6 +62,15 @@ assert.match(appSource, /Number\(value\.declinedCount\) > 0/,
 assert.match(serverSource, /body\.consent_given !== true/,
   "server must independently require explicit consent");
 
+assert.match(serverSource, /const declined = items\.filter\(item => answers\[item\.id\] === 2\)/,
+  "server must count declined responses in flag domains");
+assert.match(serverSource, /declinedCount: declined\.length/,
+  "server flag-domain results must include declined-answer count");
+assert.match(serverSource, /declinedItemIds: declined\.map\(item => item\.id\)/,
+  "server flag-domain results must include declined question IDs");
+assert.match(serverSource, /"answer_declined"/,
+  "server must distinguish declined flag-domain answers from no flagged response");
+
 assert.ok(config && Array.isArray(config.items), "questionnaire config must load");
 assert.equal(config.items.length, 42, "expected 42 questionnaire items");
 assert.equal(new Set(config.items.map((item) => item.id)).size, config.items.length,
