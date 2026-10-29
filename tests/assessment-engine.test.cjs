@@ -21,11 +21,15 @@ assert.equal(serverConfig.version, config.version, "browser/server scale version
 assert.equal(JSON.stringify(serverConfig.items.map((item) => item.id)),
   JSON.stringify(config.items.map((item) => item.id)),
   "browser/server question IDs and order must match");
-assert.equal(JSON.stringify(serverConfig.domains.map((domain) => ({
-  id: domain.id, title: domain.title, kind: domain.kind
-})), JSON.stringify(config.domains.map((domain) => ({
-  id: domain.id, title: domain.title, kind: domain.kind
-}))), "browser/server domain definitions must match");
+assert.equal(
+  JSON.stringify(serverConfig.domains.map((domain) => ({
+    id: domain.id, title: domain.title, kind: domain.kind
+  }))),
+  JSON.stringify(config.domains.map((domain) => ({
+    id: domain.id, title: domain.title, kind: domain.kind
+  }))),
+  "browser/server domain definitions must match"
+);
 for (const item of serverConfig.items) {
   const browserItem = config.items.find((candidate) => candidate.id === item.id);
   assert.ok(browserItem, `server-only question: ${item.id}`);
