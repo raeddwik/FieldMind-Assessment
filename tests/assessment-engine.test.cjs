@@ -18,13 +18,14 @@ const serverConfigMatch = serverSource.match(/const CONFIG = (\{[\s\S]*?\}) as c
 assert.ok(serverConfigMatch, "server-side questionnaire config must be present");
 const serverConfig = JSON.parse(serverConfigMatch[1]);
 assert.equal(serverConfig.version, config.version, "browser/server scale versions must match");
-assert.deepEqual(serverConfig.items.map((item) => item.id),
-  config.items.map((item) => item.id), "browser/server question IDs and order must match");
-assert.deepEqual(serverConfig.domains.map((domain) => ({
+assert.equal(JSON.stringify(serverConfig.items.map((item) => item.id)),
+  JSON.stringify(config.items.map((item) => item.id)),
+  "browser/server question IDs and order must match");
+assert.equal(JSON.stringify(serverConfig.domains.map((domain) => ({
   id: domain.id, title: domain.title, kind: domain.kind
-})), config.domains.map((domain) => ({
+})), JSON.stringify(config.domains.map((domain) => ({
   id: domain.id, title: domain.title, kind: domain.kind
-})), "browser/server domain definitions must match");
+}))), "browser/server domain definitions must match");
 for (const item of serverConfig.items) {
   const browserItem = config.items.find((candidate) => candidate.id === item.id);
   assert.ok(browserItem, `server-only question: ${item.id}`);
