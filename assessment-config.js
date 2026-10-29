@@ -39,6 +39,11 @@ window.FIELD_MIND_ASSESSMENT = {
     yes_no: [
       { label: "لا", value: 0 },
       { label: "نعم", value: 1 }
+    ],
+    yes_no_optional: [
+      { label: "لا", value: 0 },
+      { label: "نعم", value: 1 },
+      { label: "أفضل عدم الإجابة", value: 2 }
     ]
   },
   items: [
@@ -65,18 +70,18 @@ window.FIELD_MIND_ASSESSMENT = {
     { id: "adj_02", domain: "adjustment", responseScale: "frequency_0_4", text: "كان رد فعلي النفسي تجاه ضغط حديث أكبر مما أستطيع التعامل معه عادةً." },
     { id: "adj_03", domain: "adjustment", responseScale: "frequency_0_4", text: "أثرت الضغوط أو التغيرات الحديثة على نومي أو علاقاتي أو أدائي اليومي." },
 
-    { id: "bip_01", domain: "bipolar_indicators", responseScale: "yes_no", text: "هل مررت بفترة غير معتادة استمر فيها ارتفاع المزاج أو التهيج مع زيادة واضحة في الطاقة أو النشاط مقارنةً بطبيعتك؟" },
-    { id: "bip_02", domain: "bipolar_indicators", responseScale: "yes_no", text: "هل مررت بفترة احتجت فيها إلى نوم أقل بكثير من المعتاد دون أن تشعر بالتعب، مع زيادة ملحوظة في النشاط أو سرعة الأفكار؟" },
-    { id: "bip_03", domain: "bipolar_indicators", responseScale: "yes_no", text: "هل لاحظ الآخرون تغيرًا غير معتاد في مزاجك أو نشاطك أدى إلى تصرفات اندفاعية أو مشكلات؟" },
+    { id: "bip_01", domain: "bipolar_indicators", responseScale: "yes_no_optional", text: "هل مررت بفترة غير معتادة استمر فيها ارتفاع المزاج أو التهيج مع زيادة واضحة في الطاقة أو النشاط مقارنةً بطبيعتك؟" },
+    { id: "bip_02", domain: "bipolar_indicators", responseScale: "yes_no_optional", text: "هل مررت بفترة احتجت فيها إلى نوم أقل بكثير من المعتاد دون أن تشعر بالتعب، مع زيادة ملحوظة في النشاط أو سرعة الأفكار؟" },
+    { id: "bip_03", domain: "bipolar_indicators", responseScale: "yes_no_optional", text: "هل لاحظ الآخرون تغيرًا غير معتاد في مزاجك أو نشاطك أدى إلى تصرفات اندفاعية أو مشكلات؟" },
 
     { id: "sleep_01", domain: "sleep", responseScale: "frequency_0_4", text: "واجهت صعوبة في بدء النوم أو الاستمرار فيه." },
     { id: "sleep_02", domain: "sleep", responseScale: "frequency_0_4", text: "استيقظت دون أن أشعر بالراحة الكافية." },
     { id: "sleep_03", domain: "sleep", responseScale: "frequency_0_4", text: "شعرت بالنعاس أو ضعف اليقظة أثناء العمل أو التنقل." },
     { id: "sleep_04", domain: "sleep", responseScale: "frequency_0_4", text: "أثرت الورديات أو مواعيد العمل على انتظام نومي." },
 
-    { id: "psych_01", domain: "psychosis_indicators", responseScale: "yes_no", text: "هل سمعت صوتًا أو رأيت شيئًا بدا حقيقيًا لك بينما لم يلاحظه من حولك، خارج سياق النوم أو الاستيقاظ مباشرةً؟" },
-    { id: "psych_02", domain: "psychosis_indicators", responseScale: "yes_no", text: "هل شعرت مؤخرًا بيقين قوي بأن شخصًا يلاحقك أو يقصد إيذاءك رغم أن من تثق بهم لم يروا دليلًا واضحًا على ذلك؟" },
-    { id: "psych_03", domain: "psychosis_indicators", responseScale: "yes_no", text: "هل واجهت صعوبة غير معتادة في التمييز بين ما حدث فعلًا وما قد يكون ناتجًا عن أفكارك أو إدراكك؟" },
+    { id: "psych_01", domain: "psychosis_indicators", responseScale: "yes_no_optional", text: "هل سمعت صوتًا أو رأيت شيئًا بدا حقيقيًا لك بينما لم يلاحظه من حولك، خارج سياق النوم أو الاستيقاظ مباشرةً؟" },
+    { id: "psych_02", domain: "psychosis_indicators", responseScale: "yes_no_optional", text: "هل شعرت مؤخرًا بيقين قوي بأن شخصًا يلاحقك أو يقصد إيذاءك رغم أن من تثق بهم لم يروا دليلًا واضحًا على ذلك؟" },
+    { id: "psych_03", domain: "psychosis_indicators", responseScale: "yes_no_optional", text: "هل واجهت صعوبة غير معتادة في التمييز بين ما حدث فعلًا وما قد يكون ناتجًا عن أفكارك أو إدراكك؟" },
 
     { id: "burn_01", domain: "burnout", responseScale: "frequency_0_4", text: "شعرت باستنزاف نفسي بسبب العمل." },
     { id: "burn_02", domain: "burnout", responseScale: "frequency_0_4", text: "شعرت أن متطلبات العمل تتجاوز طاقتي لفترات متكررة." },
@@ -93,8 +98,8 @@ window.FIELD_MIND_ASSESSMENT = {
     { id: "func_02", domain: "functional_impact", responseScale: "frequency_0_4", text: "أثرت حالتي النفسية أو قلة النوم على تركيزي أو أدائي في العمل." },
     { id: "func_03", domain: "functional_impact", responseScale: "frequency_0_4", text: "أصبحت أجد صعوبة في التعامل مع الآخرين أو مسؤولياتي المعتادة." },
 
-    { id: "safe_01", domain: "critical_indicators", responseScale: "yes_no", safetyType: "self_harm", text: "خلال الأسبوعين الماضيين، راودتني أفكار بإيذاء نفسي أو أنني لا أريد الاستمرار في الحياة." },
-    { id: "safe_02", domain: "critical_indicators", responseScale: "yes_no", safetyType: "immediate_danger", text: "أشعر الآن أنني قد أؤذي نفسي أو شخصًا آخر، أو أنني غير قادر على الحفاظ على سلامتي." }
+    { id: "safe_01", domain: "critical_indicators", responseScale: "yes_no_optional", safetyType: "self_harm", text: "خلال الأسبوعين الماضيين، راودتني أفكار بإيذاء نفسي أو أنني لا أريد الاستمرار في الحياة." },
+    { id: "safe_02", domain: "critical_indicators", responseScale: "yes_no_optional", safetyType: "immediate_danger", text: "أشعر الآن أنني قد أؤذي نفسي أو شخصًا آخر، أو أنني غير قادر على الحفاظ على سلامتي." }
   ],
   scoring: {
     enabled: true,
