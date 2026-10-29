@@ -49,6 +49,16 @@ assert.match(appSource, /consent_given:\s*\$\("consent"\)\.checked/,
   "submission must send the actual consent checkbox value");
 assert.doesNotMatch(appSource, /consent_given:\s*true/,
   "submission must not hard-code consent as granted");
+
+ // Declined answers in flag domains must remain distinct from positive and negative answers.
+assert.match(appSource, /Number\(domain\.declinedCount \|\| 0\)/,
+  "assessment result must read the server's declined-answer count");
+assert.match(appSource, /اختار المستخدم عدم الإجابة عن سؤال أو أكثر/,
+  "assessment and admin summaries must describe declined answers explicitly");
+assert.match(appSource, /عدم الإجابة لا يثبت أو ينفي/,
+  "assessment result must clarify that declining is not diagnostic");
+assert.match(appSource, /Number\(value\.declinedCount\) > 0/,
+  "dashboard and export summaries must account for declined answers");
 assert.match(serverSource, /body\.consent_given !== true/,
   "server must independently require explicit consent");
 
