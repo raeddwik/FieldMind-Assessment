@@ -289,10 +289,10 @@ async function setLoggedIn(nextSession) {
           line-height: 1.8;
         "
       >
-        <strong>تنبيه مهم</strong>
+        <strong>يمكنك طلب المساعدة بسرية</strong>
         <p>
-          هذه الحالة تشير إلى وجود أعراض تحتاج إلى مراجعة طبيب أو معالج نفسي متخصص،
-          فلا تتردد في طلب المساعدة، وتأكد أننا نحترم خصوصيتك.
+          إذا كانت إجابتك تعكس ما تمر به، يمكنك التحدث مع شخص مؤهل أو طلب دعم مناسب.
+          هذا السؤال لا يصدر تشخيصًا، ولا ينبغي أن يكون سببًا للعقوبة أو الوصم.
         </p>
         <p>
           إذا كان هناك خطر فوري على سلامتك أو سلامة شخص آخر، فاطلب المساعدة الطبية العاجلة
@@ -467,11 +467,14 @@ async function setLoggedIn(nextSession) {
         : [];
       const positiveIds = Array.isArray(critical.positiveItemIds) ? critical.positiveItemIds : [];
       const criticalLabels = criticalItems.filter(item => positiveIds.includes(item.id)).map(item => item.text);
+      const declinedSafety = Number(critical.declinedCount || 0) > 0;
       const criticalDetails = criticalLabels.length
-        ? '<div class="notice"><strong>تنبيه: توجد إجابة تستلزم مراجعة بشرية مباشرة.</strong><p>' +
+        ? '<div class="notice"><strong>توجد إجابة تستلزم مراجعة بشرية داعمة.</strong><p>' +
           escapeHtml(criticalLabels.join("؛ ")) +
-          '</p><p>إذا كان هناك خطر فوري حالي، يجب تفعيل إجراء السلامة المعتمد وطلب المساعدة الطبية العاجلة عند الحاجة.</p></div>'
-        : '<p class="small">لم تُسجّل إجابة إيجابية في أسئلة السلامة. وهذا لا يمنع طلب المساعدة عند الحاجة.</p>';
+          '</p><p>تواصل مع العامل مباشرةً وبسرية للتحقق من السلامة الحالية. إذا كان هناك خطر فوري، فعّل إجراء السلامة المعتمد واطلب المساعدة الطبية العاجلة عند الحاجة.</p></div>'
+        : declinedSafety
+          ? '<p class="small">اختار المستخدم عدم الإجابة عن سؤال سلامة واحد أو أكثر؛ لا يمكن استنتاج وجود الخطر أو غيابه من ذلك. أتح فرصة سرية واختيارية للتواصل مع شخص مؤهل.</p>'
+          : '<p class="small">لم تُسجّل إجابة إيجابية في أسئلة السلامة. وهذا لا يثبت غياب الخطر ولا يمنع طلب المساعدة عند الحاجة.</p>';
 
       const satisfaction = domainResults.job_satisfaction;
       const satisfactionNote = satisfaction && typeof satisfaction.average === "number"
