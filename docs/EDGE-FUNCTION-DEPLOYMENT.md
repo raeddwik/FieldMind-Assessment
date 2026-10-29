@@ -28,6 +28,8 @@ Both functions:
    supabase functions deploy fieldmind-superadmin-results
    supabase functions deploy fieldmind-admin-users
 supabase functions deploy fieldmind-submit-assessment
+
+Review and apply the migration in `supabase/migrations/202610290001_require_server_assessment_submission.sql` to the staging database before testing. Do not run it against production without a reviewed change window and rollback plan.
    ```
 4. Confirm the project has the expected server-side environment variables: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. Supabase normally provides these in the Edge Function environment. Never put the service-role key in GitHub, `supabase.js`, HTML, or browser code.
 5. Keep the GitHub Pages app on its current production version until staging checks pass. A push to the `main` branch triggers GitHub Pages deployment; this development branch does not deploy through the repository's current workflow.
