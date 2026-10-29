@@ -633,14 +633,17 @@ if (tbody) {
       ? Object.entries(domains)
           .map(([key, value]) => {
             if (!value || typeof value !== "object") return key + ": " + value;
-            const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
-            const positiveResourceDomain = ["psychological_safety", "positive_mental_health", "job_satisfaction"].includes(key);
-            const direction = positiveResourceDomain
-              ? " (درجة تأييد موارد إيجابية؛ الأعلى يعني موارد مُبلّغًا عنها أكثر، وليس أعراضًا أكثر)"
-              : " (درجة وصفية للأعراض أو الصعوبات؛ الأعلى يعني تكرارًا أكبر للإجابات الدالة على الصعوبة)";
-            const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
-              ? "؛ المؤشر العكسي البحثي غير المعتمد: " + value.riskOrientedScore.toFixed(1) + "%" : "";
-            return (value.title || key) + ": " + score + direction + risk;
+              const average = typeof value.average === "number"
+                ? value.average.toFixed(1) + " / 4"
+                : "—";
+              const description = value.descriptiveBand
+                ? " — " + value.descriptiveBand
+                : value.kind === "flag"
+                  ? (Number(value.positiveCount) > 0
+                    ? " — توجد إجابة تستحق استيضاحًا متخصصًا"
+                    : " — لم تُسجّل إجابة إيجابية")
+                  : "";
+              return (value.title || key) + ": " + average + description;
           })
           .join("، ")
       : "لا توجد درجات مسجلة";
@@ -743,14 +746,17 @@ if (resetPage) dashboardPage = 0;
         ? Object.entries(domains)
             .map(([key, value]) => {
               if (!value || typeof value !== "object") return key + ": " + value;
-              const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
-              const positiveResourceDomain = ["psychological_safety", "positive_mental_health", "job_satisfaction"].includes(key);
-              const direction = positiveResourceDomain
-                ? " (درجة تأييد موارد إيجابية؛ الأعلى يعني موارد مُبلّغًا عنها أكثر، وليس أعراضًا أكثر)"
-                : " (درجة وصفية للأعراض أو الصعوبات؛ الأعلى يعني تكرارًا أكبر للإجابات الدالة على الصعوبة)";
-              const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
-                ? "؛ المؤشر العكسي البحثي غير المعتمد: " + value.riskOrientedScore.toFixed(1) + "%" : "";
-              return (value.title || key) + ": " + score + direction + risk;
+              const average = typeof value.average === "number"
+                ? value.average.toFixed(1) + " / 4"
+                : "—";
+              const description = value.descriptiveBand
+                ? " — " + value.descriptiveBand
+                : value.kind === "flag"
+                  ? (Number(value.positiveCount) > 0
+                    ? " — توجد إجابة تستحق استيضاحًا متخصصًا"
+                    : " — لم تُسجّل إجابة إيجابية")
+                  : "";
+              return (value.title || key) + ": " + average + description;
             })
             .join("، ")
         : "لا توجد درجات مسجلة";
@@ -828,12 +834,10 @@ $("export-results-button")?.addEventListener("click", () => {
 
   const headers = [
     "تاريخ التقييم",
-    "البريد الإلكتروني",
-    "حالة النتيجة",
-    "OPF Score",
-    "OPRI",
-    "Risk Level",
-    "Recommended Action"
+    "معرّف الحساب",
+    "نسخة الاستبيان",
+    "أولوية المتابعة",
+    "ملخص المحاور الوصفي"
   ];
 
   const csvCell = (value) => {
@@ -848,33 +852,30 @@ $("export-results-button")?.addEventListener("click", () => {
   };
 
   const rows = visibleDashboardRows.map((row) => {
-    const indices = row.result?.experimentalIndices ?? row.experimentalIndices ?? {};
-    const email = row.email || row.user_email || row.email_address || "";
+    const result = row.result || {};
+    const domains = result.domains || row.domains || {};
+    const domainSummary = Object.entries(domains).map(([key, value]) => {
+      if (!value || typeof value !== "object") return key + ": —";
+      if (typeof value.average === "number") {
+        return (value.title || key) + ": " + value.average.toFixed(1) + "/4";
+      }
+      if (value.kind === "flag") {
+        return (value.title || key) + ": " +
+          (Number(value.positiveCount) > 0 ? "تحتاج استيضاحًا متخصصًا" : "لا توجد إجابة إيجابية مسجلة");
+      }
+      return (value.title || key) + ": —";
+    }).join("؛ ");
     const dateOnly = row.created_at
       ? new Date(row.created_at).toLocaleDateString("en-CA")
       : "";
-    // Treat OPF and OPRI as a normalized pair. Legacy raw OPRI values can
-    // fall inside 0–100, so range checking alone cannot identify them.
-    const validNormalizedPair =
-      typeof indices.opfScore === "number" &&
-      Number.isFinite(indices.opfScore) &&
-      indices.opfScore >= 0 && indices.opfScore <= 100 &&
-      typeof indices.opri === "number" &&
-      Number.isFinite(indices.opri) &&
-      indices.opri >= 0 && indices.opri <= 100;
+    const followUp = result.followUp?.label || row.followUp?.label || "";
 
     return [
       dateOnly,
-      email,
-      ["calculation_preview_only", "pending_scale_configuration"].includes(
-        row.status || row.result?.status
-      )
-        ? ""
-        : (row.status || row.result?.status || ""),
-      validNormalizedPair ? indices.opfScore.toFixed(1) : "",
-      validNormalizedPair ? indices.opri.toFixed(1) : "",
-      validNormalizedPair ? (indices.riskLevel || "") : "",
-      validNormalizedPair ? (indices.recommendedAction || "") : ""
+      row.user_id || "",
+      row.scale_version || result.scaleVersion || "",
+      followUp,
+      domainSummary
     ];
   });
 
