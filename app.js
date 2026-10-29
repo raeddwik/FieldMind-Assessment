@@ -447,92 +447,51 @@ async function setLoggedIn(nextSession) {
       $("result-view").classList.remove("hidden");
 
       const domainResults = calculationResult.domains || {};
-      const domainLabels = {
-        depression: "نسبة وجود أعراض اكتئابية",
-        anxiety: "نسبة وجود أعراض القلق",
-        burnout: "نسبة وجود أعراض الاحتراق النفسي",
-        sleep_fatigue: "نسبة وجود مشاكل النوم والإجهاد",
-        psychosocial_stress: "نسبة الضغوط النفسية والاجتماعية في العمل",
-        functional_impact: "نسبة وجود تأثير وظيفي",
-        psychological_safety: "نسبة السلامة النفسية في بيئة العمل",
-        positive_mental_health: "نسبة الصحة النفسية الإيجابية والمرونة",
-        job_satisfaction: "نسبة وجود الرضا الوظيفي"
-      };
-      const scoreLines = Object.entries(domainResults)
-        .filter(([id]) => id !== "critical_indicators")
-        .map(([id, domain]) => {
-          const score = typeof domain.score === "number"
-            ? domain.score.toFixed(1) + "%"
-            : "غير متاح";
-          return (domainLabels[id] || domain.title || id) + ": " + score + ".";
-        })
-        .join("\n");
+      const domainHtml = Object.entries(domainResults).map(([id, domain]) => {
+        if (domain.kind === "flag") {
+          const status = domain.positiveCount > 0
+            ? "توجد إجابة تستحق استيضاحًا متخصصًا"
+            : "لم تُسجّل إجابة إيجابية في هذا الجزء";
+          return `<li><strong>${escapeHtml(domain.title || id)}:</strong> ${status}. <span class="small">لا تمثل هذه النتيجة تشخيصًا.</span></li>`;
+        }
+        const average = typeof domain.average === "number" ? domain.average.toFixed(1) + " / 4" : "غير متاح";
+        const band = domain.descriptiveBand || "";
+        return `<li><strong>${escapeHtml(domain.title || id)}:</strong> ${average} — ${escapeHtml(band)}.</li>`;
+      }).join("");
+
+      const followUp = calculationResult.followUp || {};
+      const followUpText = `
+        <section class="index-summary" style="margin:18px 0;padding:16px;border:1px solid #d7dee8;border-radius:10px">
+          <h3>خلاصة المتابعة المقترحة</h3>
+          <p><strong>${escapeHtml(followUp.label || "تحتاج النتيجة إلى مراجعة")}</strong></p>
+          <p>${escapeHtml(followUp.recommendation || "تُراجع الإجابات مع شخص مؤهل.")}</p>
+          <p class="small">هذه أولوية متابعة داخلية تجريبية وليست درجة خطورة سريرية أو تشخيصًا. لا تستخدم وحدها لاتخاذ قرار وظيفي أو تحديد اللياقة للعمل.</p>
+        </section>`;
 
       const critical = calculationResult.criticalIndicators || {};
       const criticalItems = Array.isArray(config.items)
         ? config.items.filter(item => item.domain === "critical_indicators")
         : [];
-      const positiveCriticalIds = Array.isArray(critical.positiveItemIds)
-        ? critical.positiveItemIds
-        : [];
-      const positiveCriticalLabels = criticalItems
-        .filter(item => positiveCriticalIds.includes(item.id))
-        .map(item => item.text);
+      const positiveIds = Array.isArray(critical.positiveItemIds) ? critical.positiveItemIds : [];
+      const criticalLabels = criticalItems.filter(item => positiveIds.includes(item.id)).map(item => item.text);
+      const criticalDetails = criticalLabels.length
+        ? '<div class="notice"><strong>تنبيه: توجد إجابة تستلزم مراجعة بشرية مباشرة.</strong><p>' +
+          escapeHtml(criticalLabels.join("؛ ")) +
+          '</p><p>إذا كان هناك خطر فوري حالي، يجب تفعيل إجراء السلامة المعتمد وطلب المساعدة الطبية العاجلة عند الحاجة.</p></div>'
+        : '<p class="small">لم تُسجّل إجابة إيجابية في أسئلة السلامة. وهذا لا يمنع طلب المساعدة عند الحاجة.</p>';
 
-      // Any non-zero response to dep_09 requires separate human follow-up.
-      const selfHarmItem = config.items.find(item => item.id === "dep_09");
-      const selfHarmResponsePositive =
-        typeof answers.dep_09 === "number" && answers.dep_09 > 0;
-      if (selfHarmResponsePositive && selfHarmItem &&
-          !positiveCriticalLabels.includes(selfHarmItem.text)) {
-        positiveCriticalLabels.unshift(selfHarmItem.text);
-      }
-
-      const criticalDetails = positiveCriticalLabels.length
-        ? "\n\nإجابات تستلزم مراجعة مباشرة من مختص مؤهل:\n" +
-          positiveCriticalLabels.join("؛ ") +
-          ".\nإذا كانت الإجابة المتعلقة بالانتحار أو إيذاء النفس تعكس خطرًا فوريًا حاليًا، فاطلب مساعدة طبية عاجلة أو تواصل فورًا مع خدمات الطوارئ المحلية."
-        : "\n\nإجابات تستلزم مراجعة مباشرة من مختص مؤهل: لا توجد إجابات إيجابية مسجلة في هذا القسم. لا يستبعد ذلك الحاجة إلى الدعم أو التقييم عند الحاجة.";
-
-      const indices = calculationResult.experimentalIndices || {};
-      const formatIndex = value =>
-        typeof value === "number" ? value.toFixed(1) : "غير متاح";
-      const riskClassByLevel = {
-        Low: "status-positive",
-        Moderate: "status-caution",
-        High: "status-danger",
-        Critical: "status-critical"
-      };
-      const riskClass = riskClassByLevel[indices.riskLevel] || "status-neutral";
-      const indexSummary = typeof indices.opri === "number" &&
-          typeof indices.opfScore === "number"
-        ? `
-          <section class="index-summary" style="margin:18px 0;padding:16px;border:1px solid #d7dee8;border-radius:10px">
-            <h3>المؤشرات الإرشادية الأولية</h3>
-            <p><strong>مستوى اللياقة النفسية المهني (OPF Score):</strong> <span class="${indices.opfScore >= 65 ? "status-positive" : indices.opfScore >= 35 ? "status-caution" : "status-danger"}">${formatIndex(indices.opfScore)} / 100</span></p>
-            <p><strong>مستوى الخطورة النفسية (OPRI):</strong> <span class="${riskClass}">${formatIndex(indices.opri)} / 100</span></p>
-            <p><strong>مستوى الخطورة:</strong> <span class="status-pill ${riskClass}">${escapeHtml(indices.riskLevel || "غير متاح")}</span></p>
-            <p><strong>الإجراء المقترح:</strong></p>
-            <div class="recommendation-box ${riskClass}">${escapeHtml(indices.recommendedAction || "تُراجع النتيجة مع مختص مؤهل.")}</div>
-            <p class="small">هذه مؤشرات تجريبية إرشادية وليست مقياسًا معتمدًا سريريًا. لا تستخدم وحدها لاتخاذ قرار وظيفي أو لتحديد اللياقة للعمل.</p>
-          </section>`
-        : '<p>تعذر حساب المؤشرين؛ يرجى مراجعة إعدادات المقياس.</p>';
-
-      const domainHtml = Object.entries(domainResults)
-        .filter(([id]) => id !== "critical_indicators")
-        .map(([id, domain]) => {
-          const score = typeof domain.score === "number"
-            ? domain.score.toFixed(1) + "%"
-            : "غير متاح";
-          return `<li><strong>${escapeHtml(domainLabels[id] || domain.title || id)}:</strong> ${score}</li>`;
-        }).join("");
+      const satisfaction = domainResults.job_satisfaction;
+      const satisfactionNote = satisfaction && typeof satisfaction.average === "number"
+        ? '<p><strong>الرضا الوظيفي:</strong> متوسط الموافقة ' + satisfaction.average.toFixed(1) +
+          ' من 4. يُستخدم لاستكشاف تجربة العمل، وليس لتقييم الحالة النفسية تشخيصيًا.</p>'
+        : "";
 
       $("result-summary").innerHTML =
         '<p><strong>تم حفظ إجاباتك بنجاح.</strong></p>' +
-        indexSummary +
-        '<h3>نتائج محاور التقييم</h3><ul>' + domainHtml + '</ul>' +
-        '<div style="white-space:pre-line">' + escapeHtml(criticalDetails) + '</div>' +
-        '<p class="small">هذا تقييم إرشادي أولي وليس تشخيصًا نفسيًا. المؤشرات والأوزان وحدود التصنيف تجريبية وتحتاج إلى تحقق؛ لا تستخدم النتيجة وحدها لاتخاذ قرارات وظيفية أو تحديد اللياقة للعمل. أي إجابة حرجة تستلزم مراجعة بشرية مناسبة بصرف النظر عن المؤشر الإجمالي.</p>';
+        followUpText +
+        '<h3>ملخص المحاور</h3><ul>' + domainHtml + '</ul>' +
+        satisfactionNote + criticalDetails +
+        '<p class="small">استبيان FieldMind الداخلي من تصميم صاحب المشروع، وقواعده تجريبية وغير معتمدة. لا يثبت وجود اضطراب نفسي أو ينفيه، ولا يصدر قرارًا بشأن اللياقة للعمل. يمكن طلب المساعدة في أي وقت، بصرف النظر عن النتيجة.</p>';
       if (isAdmin) {
         await loadAdminRecords();
       }
