@@ -53,6 +53,17 @@
 - [ ] Run all checks in a staging environment and record results.
 - [ ] Obtain explicit approval from the responsible data/privacy owner and the clinical/occupational-health owner before any pilot with real data.
 
+## E. Code-review observations to verify in staging
+
+These are review findings from the repository code, not proof of live database behavior.
+
+- [ ] **Service-role boundary:** `fieldmind-submit-assessment`, `fieldmind-admin-users`, and `fieldmind-superadmin-results` use a service-role client. Confirm their server-side authorization and input validation remain mandatory because service-role operations can bypass ordinary RLS protections.
+- [ ] **Admin page access path:** `app.js` loads some admin records directly from `public.assessments`, while the super-admin dashboard uses a protected Edge Function. Confirm the direct query is either intentionally permitted by a narrowly scoped RLS policy or remove/disable it in a later reviewed change; hiding the panel is not a security boundary.
+- [ ] **Role integrity:** verify database constraints and policies ensure a user cannot insert or modify their own `user_roles` rows or grant themselves `admin`/`super_admin`.
+- [ ] **Migration behavior:** the migration revokes INSERT grants from `PUBLIC`, `anon`, and `authenticated`, then grants INSERT to `service_role`. Verify it applies cleanly to the existing staging schema and does not unintentionally change SELECT behavior.
+- [ ] **Human safety process:** the application can display a safety notice, but it does not itself guarantee a person receives or acts on an alert. Confirm an actual staffed follow-up process exists before any real-data pilot.
+- [ ] **CORS and environment:** all three functions currently allow `https://raeddwik.github.io`; verify this is the intended host for the staging build, and avoid wildcard CORS.
+
 ## Known limitations
 
 - This is a custom, owner-designed questionnaire draft, not a validated or licensed clinical scale.
