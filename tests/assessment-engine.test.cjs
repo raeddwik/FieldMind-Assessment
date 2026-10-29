@@ -50,6 +50,17 @@ assert.match(appSource, /consent_given:\s*\$\("consent"\)\.checked/,
 assert.doesNotMatch(appSource, /consent_given:\s*true/,
   "submission must not hard-code consent as granted");
 
+// Sensitive assessment records must not be fetched directly from the browser admin panel.
+const adminRecordsStart = appSource.indexOf("async function loadAdminRecords()");
+const dashboardLoaderStart = appSource.indexOf("async function fetchAllDashboardRows()", adminRecordsStart);
+assert.ok(adminRecordsStart >= 0 && dashboardLoaderStart > adminRecordsStart,
+  "admin records and protected dashboard loaders must be identifiable");
+const adminRecordsSource = appSource.slice(adminRecordsStart, dashboardLoaderStart);
+assert.doesNotMatch(adminRecordsSource, /\.from\(["']assessments["']\)/,
+  "admin panel must not directly query assessment records from the browser");
+assert.match(appSource, /fieldmind-superadmin-results/,
+  "super-admin results must be loaded through the protected server function");
+
  // Declined answers in flag domains must remain distinct from positive and negative answers.
 assert.match(appSource, /Number\(domain\.declinedCount \|\| 0\)/,
   "assessment result must read the server's declined-answer count");
