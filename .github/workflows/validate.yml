@@ -2,9 +2,9 @@ name: Validate FieldMind draft
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, fieldmind-internal-screening-v1]
   push:
-    branches: [fieldmind-internal-screening-v1]
+    branches: [fieldmind-internal-screening-v1, fix/fieldmind-cors-staging]
 
 permissions:
   contents: read
