@@ -82,6 +82,17 @@ assert.match(serverSource, /declinedItemIds,/,
 assert.match(serverSource, /"answer_declined"/,
   "server must distinguish declined flag-domain answers from no flagged response");
 
+assert.match(serverSource, /const domains: Record<string, any> = \{\}/,
+  "server must return descriptive domain summaries instead of an empty object");
+assert.match(serverSource, /descriptiveBand/,
+  "server domain summaries must include a non-diagnostic descriptive band");
+assert.match(serverSource, /followUp,/,
+  "server result must include a follow-up suggestion");
+assert.match(serverSource, /classification:null/,
+  "server must not issue an automated fitness classification");
+assert.match(serverSource, /overallClinicalScore:null/,
+  "server must not issue an automated clinical score");
+
 assert.ok(config && Array.isArray(config.items), "questionnaire config must load");
 assert.equal(config.items.length, 42, "expected 42 questionnaire items");
 assert.equal(new Set(config.items.map((item) => item.id)).size, config.items.length,
