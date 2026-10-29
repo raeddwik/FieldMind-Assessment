@@ -70,6 +70,7 @@
 
     const criticalItems = config.items.filter(item => item.domain === "critical_indicators");
     const positiveSafetyItems = criticalItems.filter(item => answers[item.id] === 1);
+    const declinedSafetyItems = criticalItems.filter(item => answers[item.id] === 2);
     const immediateDanger = positiveSafetyItems.some(item => item.safetyType === "immediate_danger");
     const selfHarmThoughts = positiveSafetyItems.some(item => item.safetyType === "self_harm");
     const specialistFlags = ["bipolar_indicators", "psychosis_indicators"]
@@ -97,6 +98,11 @@
       followUpLevel = "specialist_review";
       followUpLabel = "اقتراح مراجعة مختص";
       recommendation = "يُوصى بالتواصل بسرية مع العامل وعرض تقييم لدى مختص نفسي أو طبي مناسب. الإجابات المتعلقة بتغيرات المزاج والطاقة أو الخبرات الإدراكية تستدعي استيضاحًا متخصصًا ولا تثبت اضطرابًا بعينه.";
+    }
+    if (declinedSafetyItems.length && !selfHarmThoughts && !immediateDanger) {
+      followUpLevel = "offer_support";
+      followUpLabel = "إتاحة تواصل سري اختياري";
+      recommendation = "اختار العامل عدم الإجابة عن سؤال سلامة واحد أو أكثر. لا يُفسَّر ذلك على أنه وجود خطر أو غيابه. يُفضّل إتاحة فرصة سرية واختيارية للتحدث مع شخص مؤهل، دون ضغط أو عقوبة.";
     }
     if (selfHarmThoughts) {
       followUpLevel = "prompt_human_review";
