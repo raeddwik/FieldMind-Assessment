@@ -376,64 +376,26 @@ async function setLoggedIn(nextSession) {
     message("form-message", "جارٍ حفظ التقييم...");
 
     try {
-      const scoringEngine = window.FIELD_MIND_SCORING_ENGINE;
+      const { data: submission, error: submitError } = await db().functions.invoke(
+        "fieldmind-submit-assessment",
+        {
+          body: {
+            scale_version: config.version,
+            answers: answers
+          }
+        }
+      );
 
-      if (
-        !scoringEngine ||
-        typeof scoringEngine.calculate !== "function"
-      ) {
+      if (submitError || !submission?.ok || !submission?.result) {
+        console.error("Assessment submission failed:", submitError || submission?.error);
         return message(
           "form-message",
-          "محرك الحساب غير متاح. يرجى تحديث الصفحة والمحاولة مجددًا.",
+          "لم نتمكن من التحقق من التقييم وحفظه على الخادم. لم يتم تأكيد الحفظ؛ يرجى المحاولة لاحقًا.",
           true
         );
       }
 
-      let calculationResult;
-
-      try {
-        calculationResult = scoringEngine.calculate(answers);
-      } catch (error) {
-        console.error("Scoring error:", error);
-
-        return message(
-          "form-message",
-          "تعذر حساب الدرجات. يرجى مراجعة إعدادات المقياس.",
-          true
-        );
-      }
-
-      if (
-        calculationResult.status !== "calculation_preview_only"
-      ) {
-        return message(
-          "form-message",
-          "تعذر إكمال الحساب بسبب وجود إجابات أو إعدادات غير صالحة.",
-          true
-        );
-      }
-
-      const payload = {
-        user_id: session.user.id,
-        scale_version: config.version,
-        answers: answers,
-        result: calculationResult,
-        consent_given: true
-      };
-
-      const { error } = await db()
-        .from("assessments")
-        .insert(payload);
-
-      if (error) {
-        console.error("Assessment save failed:", error);
-
-        return message(
-          "form-message",
-          "لم نتمكن من حفظ التقييم. تحقق من إعداد قاعدة البيانات والصلاحيات.",
-          true
-        );
-      }
+      const calculationResult = submission.result;
 
       $("assessment-form").classList.add("hidden");
       $("start-view").classList.add("hidden");
