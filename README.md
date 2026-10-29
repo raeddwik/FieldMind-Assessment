@@ -1,68 +1,55 @@
 # FieldMind — Occupational Mental Health Assessment
 
-A starter PWA for a custom occupational mental-health assessment workflow for oil production field workers. Arabic RTL interface. Built with HTML/CSS/JavaScript, Supabase Auth, Postgres and Row Level Security.
+FieldMind is an Arabic, right-to-left web app for an **internal, preliminary occupational mental-health and wellbeing questionnaire**. The current working branch is `fieldmind-internal-screening-v1`; its assessment is a custom 42-item draft.
 
-## Important status
+## Status and limits
 
-This is a **technical starter only**. The included questionnaire is clearly marked as demo content and does not generate a clinical score. Do not use it for actual employee screening until the scale owner's exact items, scoring rules, reverse-coded items, domain formulas, cutoffs, interpretations, and recommendations are configured and validated.
+- The questionnaire and follow-up rules are internal drafts, not validated or licensed clinical scales.
+- Results are descriptive and intended only to help offer appropriate follow-up. They are not a diagnosis, a validated severity score, or a fitness-for-work decision.
+- The overall OPRI/OPF indices and automatic clinical classification are retired/disabled.
+- Do not use real worker responses until privacy, access controls, retention, professional review, and a staffed human safety-response process are approved and tested.
+- Keep this work on the draft branch. Do not merge or deploy it to production as part of routine testing.
 
-## Files
+## Main files
 
-- `index.html` — Arabic RTL app shell
-- `styles.css` — responsive styling
-- `app.js` — login, questionnaire flow, saving, and admin list
-- `supabase.js` — public browser client configuration
-- `assessment-config.js` — temporary demo questions/options
-- `schema.sql` — initial database tables and RLS policies
-- `.github/workflows/deploy.yml` — GitHub Pages deployment workflow
+- `index.html` — Arabic RTL application shell, consent, and privacy/scope notices
+- `styles.css` — responsive presentation
+- `app.js` — login, questionnaire navigation, submission, and authorized admin views
+- `assessment-config.js` — 42-item questionnaire and response options
+- `scoring-engine.js` — client-side draft preview logic; not a clinical scoring instrument
+- `supabase.js` — public browser client configuration (publishable key only; never put a service-role/secret key here)
+- `supabase/functions/fieldmind-submit-assessment/index.ts` — authenticated server-side validation, draft follow-up summary, and trusted insert
+- `supabase/functions/fieldmind-admin-users/index.ts` — privileged user/role workflow
+- `supabase/functions/fieldmind-superadmin-results/index.ts` — privileged result metadata workflow
+- `supabase/migrations/` — reviewed, versioned database changes; each migration must be checked before application
+- `tests/assessment-engine.test.cjs` — automated consistency and behavior checks
+- `.github/workflows/validate.yml` — JavaScript syntax, questionnaire tests, and Edge Function type checks
 
-## 1. Create Supabase project
+## Development and checks
 
-1. Create a new Supabase project separate from any existing application.
-2. In **Project Settings → API**, copy the Project URL and Publishable key (or legacy anon key).
-3. Replace the placeholders in `supabase.js`.
-4. Open **SQL Editor**, run `schema.sql`.
-5. In **Authentication → URL Configuration**, add your deployed GitHub Pages URL to Site URL / Redirect URLs as appropriate.
-6. Configure email authentication and SMTP/delivery settings before real use.
+The draft pull request is **not merged**. GitHub Actions is configured to validate the draft branch and pull requests targeting `main`.
 
-Never use a `service_role` or secret key in frontend JavaScript.
+The JavaScript checks run with Node.js:
 
-## 2. Load the assessment configuration
-
-`assessment-config.js` must be loaded before `app.js`. Add this line in `index.html` immediately before `app.js`:
-
-```html
-<script src="./assessment-config.js"></script>
-<script src="./app.js"></script>
+```bash
+node --check app.js
+node --check assessment-config.js
+node --check scoring-engine.js
+node --check supabase.js
+node tests/assessment-engine.test.cjs
 ```
 
-This file is intentionally separate so the owner's approved scale can replace the demo items without changing the UI engine.
+The Edge Functions are type-checked with Deno by GitHub Actions. A local static server may be used for browser testing; opening `index.html` as a `file://` URL can interfere with authentication and network requests.
 
-## 3. Deploy to GitHub Pages
+## Supabase and deployment safety
 
-1. Create a new repository, for example `FieldMind-Assessment`.
-2. Upload all files and folders in this project to the repository root.
-3. Open **Settings → Pages** and choose **GitHub Actions** as the build/deployment source.
-4. Push to `main` or run the workflow manually.
-5. Open the published URL and test with non-sensitive test accounts.
+- Use a dedicated **staging** Supabase project for testing. Confirm the project URL before any deployment or database change.
+- The browser must use only the Supabase publishable key. The service-role key must remain in Edge Function secrets.
+- The submission Edge Function checks the caller's session, questionnaire version, exact answer IDs, allowed answer values, and explicit consent; it generates the saved draft result server-side.
+- The migration `supabase/migrations/202610290001_require_server_assessment_submission.sql` is a deployment gate. Review and test it in staging first; verify direct client inserts are denied and the server submission still succeeds before considering any production change.
+- `schema.sql` is a fresh-install template, not a live migration. Do not run it against an existing live database.
+- Before pilot use, verify that users can read only their own records, privileged functions reject non-authorized callers, safety responses have an approved human follow-up path, and data retention/deletion and audit controls are documented.
 
-## 4. Create the first administrator
+## Safety and privacy
 
-First sign in once with the intended admin email so the user exists in Supabase Auth. Find that user's UUID in **Authentication → Users**. Then run this SQL in the SQL Editor, replacing the UUID:
-
-```sql
-insert into public.user_roles (user_id, role)
-values ('REPLACE-WITH-AUTH-USER-UUID', 'admin')
-on conflict (user_id) do update set role = excluded.role;
-```
-
-Do not create an admin assignment form in the public frontend. Only a trusted project administrator should assign roles.
-
-## 5. Important implementation notes
-
-- The first version saves submitted answers and a placeholder result status. Scoring is not implemented until the approved scale specification is provided.
-- Admin table displays user UUID and record status only. It does not expose email or detailed answers in the list.
-- A user can read only their own records; an administrator can read all assessment records.
-- Email delivery of result summaries is a later backend step. Do not send sensitive result details through an unprotected email.
-- This starter does not yet implement rate limiting, audit logs, data retention/deletion workflows, or a clinical escalation pathway. Add and test these before production.
-- GitHub Pages is static hosting; privileged operations must run in a secure backend or Supabase Edge Function, never in the browser.
+Use synthetic test accounts and synthetic answers while validating the workflow. Do not enter identifiable employee details or real sensitive psychological responses until the organization has approved the purpose, consent language, access roles, retention period, and response process. No automated result should be used by itself for employment, medical, or fitness-for-work decisions.
