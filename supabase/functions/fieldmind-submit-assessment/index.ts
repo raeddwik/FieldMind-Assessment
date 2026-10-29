@@ -15,11 +15,22 @@ function calculate(answers: Record<string, number>) {
     if (domain.id === "critical_indicators") continue;
     const items = CONFIG.items.filter(item => item.domain === domain.id);
     const positives = items.filter(item => answers[item.id] === 1);
+    const declined = items.filter(item => answers[item.id] === 2);
     if (domain.kind === "flag") {
-      domains[domain.id] = { title: domain.title, kind: "flag", positiveCount: positives.length,
+      domains[domain.id] = {
+        title: domain.title,
+        kind: "flag",
+        positiveCount: positives.length,
         positiveItemIds: positives.map(item => item.id),
-        status: positives.length ? "needs_specialist_review" : "no_flagged_response",
-        interpretation: "إجابات للاستضاح المتخصص فقط؛ لا تثبت أو تنفي تشخيصًا." };
+        declinedCount: declined.length,
+        declinedItemIds: declined.map(item => item.id),
+        status: positives.length
+          ? "needs_specialist_review"
+          : declined.length
+            ? "answer_declined"
+            : "no_flagged_response",
+        interpretation: "إجابات للاستضياح المتخصص فقط؛ لا تثبت أو تنفي تشخيصًا."
+      };
     } else {
       const average = items.reduce((sum, item) => sum + answers[item.id], 0) / Math.max(items.length, 1);
       let descriptiveBand = "تكرار مُبلّغ عنه أقل في هذه الإجابات";
