@@ -4,6 +4,15 @@
 
 ## A. Functional testing in a non-production environment
 
+### Environment gate — resolve before browser testing
+- [ ] Confirm the deployed page's origin and the exact Supabase project reference it uses; never infer the environment from the page title.
+- [ ] The tracked `supabase.js` currently points to the production project reference. Do not use that tracked configuration for staging tests or point a public test page at staging without an explicit environment plan.
+- [ ] The developer's local `supabase.js` override is uncommitted and must remain separate from tracked release files until a reviewed staging configuration strategy is implemented.
+- [ ] The Edge Functions currently allow the GitHub Pages origin `https://raeddwik.github.io`. Localhost browser tests require a deliberately configured exact-origin allowlist; do not use wildcard CORS as a workaround.
+- [ ] Never paste a service-role key into browser code, GitHub files, issues, or chat. Only publishable keys belong in `supabase.js`.
+- [ ] Keep `supabase/.temp/` local and untracked; do not commit CLI cache or temporary credentials.
+
+
 - [ ] Open the application and confirm Arabic/RTL layout, login, logout, and session refresh work.
 - [ ] Confirm all 42 items appear once, in the intended order, with correct response labels.
 - [ ] Confirm Previous/Next preserves the selected answer.
