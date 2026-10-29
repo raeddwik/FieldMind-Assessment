@@ -381,7 +381,8 @@ async function setLoggedIn(nextSession) {
         {
           body: {
             scale_version: config.version,
-            answers: answers
+            answers: answers,
+            consent_given: true
           }
         }
       );
