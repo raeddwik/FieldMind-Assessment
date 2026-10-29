@@ -482,48 +482,25 @@ async function setLoggedIn(nextSession) {
     }
   }
 
+  // لا نقرأ سجلات التقييمات مباشرة من المتصفح حتى لو كان المستخدم مديرًا.
+  // عرض النتائج الحساسة يتم فقط عبر Edge Function التي تتحقق من super_admin على الخادم.
   async function loadAdminRecords() {
-    if (!isAdmin || !db()) return;
+    if (!isAdmin) return;
 
-    message("admin-message", "جارٍ تحميل السجلات...");
-
-    const { data, error } = await db()
-      .from("assessments")
-      .select("id,user_id,created_at,result")
-      .order("created_at", { ascending: false })
-      .limit(100);
-
-    if (error) {
-      console.error("Admin records error:", error);
-
-      $("admin-records").innerHTML =
-        '<tr><td colspan="3">تعذر تحميل السجلات. تحقق من صلاحيات الإدارة.</td></tr>';
-
-      return message(
-        "admin-message",
-        "تعذر تحميل السجلات.",
-        true
-      );
+    const records = $("admin-records");
+    if (records) {
+      records.innerHTML =
+        '<tr><td colspan="3">عرض السجلات متاح فقط من لوحة النتائج المحمية للحساب المخوّل.</td></tr>';
     }
-
-    $("admin-records").innerHTML = data.length
-      ? data.map((row) => `
-          <tr>
-            <td>${escapeHtml(
-              new Date(row.created_at).toLocaleString("ar-EG")
-            )}</td>
-            <td>${escapeHtml(row.user_id)}</td>
-            <td>${escapeHtml(row.result?.status || "مسجل")}</td>
-          </tr>
-        `).join("")
-      : '<tr><td colspan="3">لا توجد سجلات حتى الآن.</td></tr>';
 
     message(
       "admin-message",
-      `عدد السجلات المعروضة: ${data.length}`
+      isSuperAdmin
+        ? "استخدم لوحة النتائج المحمية لعرض السجلات."
+        : "لا تتوفر لهذا الدور صلاحية عرض سجلات التقييمات."
     );
   }
-  
+
   // تحميل جميع نتائج التقييمات عبر دالة الخادم المحمية.
   async function fetchAllDashboardRows() {
     if (!isSuperAdmin || !db()) {
