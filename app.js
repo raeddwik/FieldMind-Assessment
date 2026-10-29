@@ -19,14 +19,8 @@
   const panels = ["auth-panel", "app-panel", "admin-panel"];
 
   const criticalIds = new Set([
-    "critical_01",
-    "critical_02",
-    "critical_03",
-    "critical_04",
-    "critical_05",
-    "critical_06",
-    "critical_07",
-    "critical_08"
+    "safe_01",
+    "safe_02"
   ]);
 
   const roleLabels = {
@@ -224,11 +218,10 @@ async function setLoggedIn(nextSession) {
     const isCriticalYes = criticalIds.has(item.id) &&
       picked && Number(picked.value) === 1;
 
-    // Any non-zero response to dep_09 (self-harm/suicidal thoughts frequency item)
-    // also prompts a confidential human review; this is not a risk classification.
-    const isSelfHarmFrequencyItem = item.id === "dep_09";
+    // A "yes" to either safety question opens a supportive notice; this is not a diagnosis.
+    const isSelfHarmFrequencyItem = item.id === "safe_01";
     const selfHarmFrequencyPositive = isSelfHarmFrequencyItem &&
-      picked && Number(picked.value) > 0;
+      picked && Number(picked.value) === 1;
 
     alert.style.display =
       isCriticalYes || selfHarmFrequencyPositive ? "block" : "none";
