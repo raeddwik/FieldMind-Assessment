@@ -53,7 +53,11 @@ Deno.serve(async (req) => {
 
   let body: { action?: unknown; user_id?: unknown; role?: unknown };
   try {
-    body = await req.json();
+    const parsed: unknown = await req.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return jsonResponse({ error: "Invalid JSON body" }, 400);
+    }
+    body = parsed as { action?: unknown; user_id?: unknown; role?: unknown };
   } catch {
     return jsonResponse({ error: "Invalid JSON body" }, 400);
   }
