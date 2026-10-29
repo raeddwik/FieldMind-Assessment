@@ -414,10 +414,16 @@ async function setLoggedIn(nextSession) {
       const domainResults = calculationResult.domains || {};
       const domainHtml = Object.entries(domainResults).map(([id, domain]) => {
         if (domain.kind === "flag") {
-          const status = domain.positiveCount > 0
+          const positiveCount = Number(domain.positiveCount || 0);
+          const declinedCount = Number(domain.declinedCount || 0);
+
+          const status = positiveCount > 0
             ? "توجد إجابة تستحق استيضاحًا متخصصًا"
-            : "لم تُسجّل إجابة إيجابية في هذا الجزء";
-          return `<li><strong>${escapeHtml(domain.title || id)}:</strong> ${status}. <span class="small">لا تمثل هذه النتيجة تشخيصًا.</span></li>`;
+            : declinedCount > 0
+              ? "اختار المستخدم عدم الإجابة عن سؤال أو أكثر في هذا الجزء"
+              : "لم تُسجّل إجابة إيجابية في هذا الجزء";
+
+          return `<li><strong>${escapeHtml(domain.title || id)}:</strong> ${status}. <span class="small">هذه النتيجة وصفية ولا تمثل تشخيصًا، وعدم الإجابة لا يثبت أو ينفي وجود مشكلة نفسية.</span></li>`;
         }
         const average = typeof domain.average === "number" ? domain.average.toFixed(1) + " / 4" : "غير متاح";
         const band = domain.descriptiveBand || "";
@@ -613,7 +619,9 @@ if (tbody) {
                 : value.kind === "flag"
                   ? (Number(value.positiveCount) > 0
                     ? " — توجد إجابة تستحق استيضاحًا متخصصًا"
-                    : " — لم تُسجّل إجابة إيجابية")
+                    : Number(value.declinedCount) > 0
+                      ? " — اختار المستخدم عدم الإجابة عن سؤال أو أكثر"
+                      : " — لم تُسجّل إجابة إيجابية")
                   : "";
               return (value.title || key) + ": " + average + description;
           })
@@ -726,7 +734,9 @@ if (resetPage) dashboardPage = 0;
                 : value.kind === "flag"
                   ? (Number(value.positiveCount) > 0
                     ? " — توجد إجابة تستحق استيضاحًا متخصصًا"
-                    : " — لم تُسجّل إجابة إيجابية")
+                    : Number(value.declinedCount) > 0
+                      ? " — اختار المستخدم عدم الإجابة عن سؤال أو أكثر"
+                      : " — لم تُسجّل إجابة إيجابية")
                   : "";
               return (value.title || key) + ": " + average + description;
             })
@@ -833,7 +843,11 @@ $("export-results-button")?.addEventListener("click", () => {
       }
       if (value.kind === "flag") {
         return (value.title || key) + ": " +
-          (Number(value.positiveCount) > 0 ? "تحتاج استيضاحًا متخصصًا" : "لا توجد إجابة إيجابية مسجلة");
+          (Number(value.positiveCount) > 0
+            ? "تحتاج استيضاحًا متخصصًا"
+            : Number(value.declinedCount) > 0
+              ? "اختار المستخدم عدم الإجابة عن سؤال أو أكثر"
+              : "لا توجد إجابة إيجابية مسجلة");
       }
       return (value.title || key) + ": —";
     }).join("؛ ");
