@@ -36,15 +36,15 @@ Authorization differs by function:
 
 ## Required staging tests
 
-- A signed-out request to either function is rejected.
-- A signed-in `worker` request is rejected with 403.
-- A signed-in `admin` request is rejected with 403.
+- Signed-out requests to all three functions are rejected.
+- A signed-in `worker` or `admin` request to either privileged administration function is rejected with 403.
+- An authenticated worker can submit a valid assessment through `fieldmind-submit-assessment`; the server stores the authenticated user's ID and server-generated result.
 - A signed-in `super_admin` can list user accounts and page through assessment metadata.
 - A `super_admin` cannot demote themselves or modify another `super_admin` using the user-management function.
 - A `super_admin` can assign only the three permitted non-super-admin roles.
 - A normal user still cannot read other users' assessment rows through the browser client.
 - The submission function rejects missing/extra answer IDs, invalid answer values, unsupported questionnaire versions, and unauthenticated requests.
-- A worker submission is saved with the authenticated user's ID; the client cannot choose another user's ID or submit a precomputed result.
+- The submission function rejects missing/extra answer IDs, invalid answer values, unsupported questionnaire versions, and missing consent.
 - The CORS preflight succeeds from the published GitHub Pages origin.
 - Check Supabase logs for errors, without copying sensitive response bodies into tickets or chat.
 
