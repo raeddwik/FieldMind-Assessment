@@ -43,15 +43,104 @@ Deno.serve(async(req:Request)=>{
    : declinedCount > 0
      ? "answer_declined"
      : "no_automated_classification";
+
+ // Return descriptive domain summaries from the server so the saved result and
+ // the user's result screen use the same trusted server response.
+ const domains: Record<string, any> = {};
+ for (const domain of CONFIG.domains as readonly any[]) {
+   if (domain.id === "critical_indicators") continue;
+   const domainItems = items.filter(item => item.domain === domain.id);
+   const positive = domainItems.filter(item => answers[item.id] === 1);
+   if (domain.kind === "flag") {
+     const declinedDomainItems = domainItems.filter(item => answers[item.id] === 2);
+     domains[domain.id] = {
+       title: domain.title,
+       kind: "flag",
+       positiveCount: positive.length,
+       positiveItemIds: positive.map(item => item.id),
+       declinedCount: declinedDomainItems.length,
+       declinedItemIds: declinedDomainItems.map(item => item.id),
+       status: positive.length ? "needs_specialist_review" : "no_flagged_response",
+       interpretation: "إجابات للاستضاح المتخصص فقط؛ لا تثبت أو تنفي تشخيصًا."
+     };
+     continue;
+   }
+   const values = domainItems.map(item => answers[item.id]);
+   const average = values.reduce((sum, value) => sum + value, 0) / Math.max(values.length, 1);
+   let descriptiveBand = "تكرار مُبلّغ عنه أقل في هذه الإجابات";
+   if (domain.kind === "agreement") {
+     descriptiveBand = average < 2
+       ? "مستوى موافقة أقل؛ قد يفيد استكشاف ظروف العمل"
+       : average >= 3
+         ? "مستوى موافقة أعلى على عبارات الرضا"
+         : "مستوى موافقة متوسط على عبارات الرضا";
+   } else if (average >= 2.5) {
+     descriptiveBand = "تكرار مُبلّغ عنه أعلى نسبيًا؛ يستحق مراجعة";
+   } else if (average >= 1.5) {
+     descriptiveBand = "تكرار مُبلّغ عنه متوسط؛ قد تستفيد من المتابعة";
+   }
+   domains[domain.id] = {
+     title: domain.title,
+     kind: domain.kind,
+     average: Math.round(average * 100) / 100,
+     responseRange: "0–4",
+     descriptiveBand,
+     status: "descriptive_only",
+     interpretation: domain.id === "job_satisfaction"
+       ? "متوسط الموافقة على عبارات الرضا؛ ليس مقياسًا معتمدًا."
+       : "متوسط تكرار الإجابات؛ ليس درجة شدة سريرية ولا تشخيصًا."
+   };
+ }
+ const averages = Object.entries(domains)
+   .filter(([id, value]) => id !== "job_satisfaction" && typeof (value as any).average === "number")
+   .map(([id, value]) => ({ id, average: (value as any).average as number }));
+ const elevatedDomains = averages.filter(value => value.average >= 2.5);
+ const moderateDomains = averages.filter(value => value.average >= 1.5);
+ const functionalAverage = typeof domains.functional_impact?.average === "number"
+   ? domains.functional_impact.average : 0;
+ const satisfactionAverage = typeof domains.job_satisfaction?.average === "number"
+   ? domains.job_satisfaction.average : null;
+ let followUp = {
+   level: "routine",
+   label: "متابعة اعتيادية وإتاحة طلب المساعدة",
+   recommendation: "هذه خلاصة وصفية تجريبية فقط. يمكن للعامل طلب الدعم في أي وقت، ولا تُستخدم النتيجة وحدها لاتخاذ قرار وظيفي."
+ };
+ if (moderateDomains.length || (satisfactionAverage !== null && satisfactionAverage < 2)) {
+   followUp = {
+     level: "offer_support",
+     label: "عرض الدعم والمتابعة",
+     recommendation: "يمكن عرض تواصل سري وغير عقابي مع مسؤول صحة مهنية مؤهل أو مختص مناسب لمناقشة الضغوط والدعم المطلوب. هذه النتيجة ليست تشخيصًا."
+   };
+ }
+ if (elevatedDomains.length || functionalAverage >= 2.5 ||
+     (domains.bipolar_indicators?.positiveCount || 0) > 0 ||
+     (domains.psychosis_indicators?.positiveCount || 0) > 0) {
+   followUp = {
+     level: "specialist_review",
+     label: "اقتراح مراجعة مختص",
+     recommendation: "يُقترح التواصل بسرية مع العامل وعرض تقييم لدى مختص مناسب. المؤشرات لا تثبت اضطرابًا بعينه ولا تمثل درجة شدة سريرية."
+   };
+ }
+ if (declinedCount > 0 && positiveItemIds.length === 0) {
+   followUp = {
+     level: "offer_support",
+     label: "إتاحة تواصل سري اختياري",
+     recommendation: "اختار العامل عدم الإجابة عن سؤال سلامة واحد أو أكثر. لا يُفسر ذلك على أنه وجود خطر أو غيابه؛ تُتاح فرصة سرية واختيارية للتحدث مع شخص مؤهل دون ضغط أو عقوبة."
+   };
+ }
+ if (positiveItemIds.length > 0) {
+   followUp = {
+     level: "prompt_human_review",
+     label: "مراجعة بشرية مباشرة",
+     recommendation: "تستلزم الإجابة تواصلًا بشريًا مباشرًا وسريًا من شخص مؤهل للتحقق من السلامة الحالية وعرض المساعدة. لا يُستنتج مستوى الخطر من الاستبيان وحده."
+   };
+ }
  const result={
    status:"calculation_preview_only",
    scaleVersion:CONFIG.version,
    previewOnly:true,
-   domains:{},
-   followUp:{
-     label:positiveItemIds.length?"توجد إجابة تستلزم مراجعة بشرية":"لم يتم إصدار توصية آلية",
-     recommendation:positiveItemIds.length?"يرجى تفعيل مسار دعم بشري مناسب بسرعة، مع مراعاة السلامة والخصوصية.":"تُراجع الإجابات مع مختص مؤهل عند الحاجة. لا تُستخدم هذه النتيجة وحدها لاتخاذ قرار طبي أو وظيفي."
-   },
+   domains,
+   followUp,
    criticalIndicators:{positiveItemIds,declinedCount,declinedItemIds,status:safetyStatus},
    overallClinicalScore:null,
    classification:null,
