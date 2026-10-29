@@ -10,6 +10,43 @@ vm.runInContext(fs.readFileSync("scoring-engine.js", "utf8"), context);
 const config = context.window.FIELD_MIND_ASSESSMENT;
 const engine = context.window.FIELD_MIND_SCORING_ENGINE;
 
+// Keep the server-side submission contract aligned with the browser questionnaire.
+const serverSource = fs.readFileSync(
+  "supabase/functions/fieldmind-submit-assessment/index.ts", "utf8"
+);
+const serverConfigMatch = serverSource.match(/const CONFIG = (\{[\s\S]*?\}) as const;/);
+assert.ok(serverConfigMatch, "server-side questionnaire config must be present");
+const serverConfig = JSON.parse(serverConfigMatch[1]);
+assert.equal(serverConfig.version, config.version, "browser/server scale versions must match");
+assert.deepEqual(serverConfig.items.map((item) => item.id),
+  config.items.map((item) => item.id), "browser/server question IDs and order must match");
+assert.deepEqual(serverConfig.domains.map((domain) => ({
+  id: domain.id, title: domain.title, kind: domain.kind
+})), config.domains.map((domain) => ({
+  id: domain.id, title: domain.title, kind: domain.kind
+})), "browser/server domain definitions must match");
+for (const item of serverConfig.items) {
+  const browserItem = config.items.find((candidate) => candidate.id === item.id);
+  assert.ok(browserItem, `server-only question: ${item.id}`);
+  assert.equal(item.scale, browserItem.responseScale,
+    `response scale mismatch for ${item.id}`);
+  const expectedMax = config.responseScales[browserItem.responseScale]
+    .reduce((max, option) => Math.max(max, option.value), -Infinity);
+  assert.equal(item.scale === "yes_no_optional" ? 2 : 4, expectedMax,
+    `server answer range must match browser options for ${item.id}`);
+}
+
+// Consent must come from the user's checkbox and be checked again on submit.
+const appSource = fs.readFileSync("app.js", "utf8");
+assert.match(appSource, /if \(!\$\("consent"\)\?\.checked\)/,
+  "submission must reject if explicit consent is absent");
+assert.match(appSource, /consent_given:\s*\$\("consent"\)\.checked/,
+  "submission must send the actual consent checkbox value");
+assert.doesNotMatch(appSource, /consent_given:\s*true/,
+  "submission must not hard-code consent as granted");
+assert.match(serverSource, /body\.consent_given !== true/,
+  "server must independently require explicit consent");
+
 assert.ok(config && Array.isArray(config.items), "questionnaire config must load");
 assert.equal(config.items.length, 42, "expected 42 questionnaire items");
 assert.equal(new Set(config.items.map((item) => item.id)).size, config.items.length,
