@@ -1,6 +1,7 @@
 -- FieldMind security migration: require the server submission function for new assessment inserts.
 -- Review against the live schema and test in staging before applying to production.
 -- Existing SELECT policies remain unchanged.
+REVOKE INSERT ON TABLE public.assessments FROM PUBLIC;
 REVOKE INSERT ON TABLE public.assessments FROM anon;
 REVOKE INSERT ON TABLE public.assessments FROM authenticated;
 GRANT INSERT ON TABLE public.assessments TO service_role;
