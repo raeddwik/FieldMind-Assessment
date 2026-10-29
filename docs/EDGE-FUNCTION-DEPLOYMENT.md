@@ -6,6 +6,7 @@
 
 - `fieldmind-superadmin-results`: returns paginated assessment metadata/results to an authenticated `super_admin`. It intentionally does not return the raw `answers` JSON.
 - `fieldmind-admin-users`: lists user accounts and lets a `super_admin` assign only `admin`, `occupational_health`, or `worker` to another account. It refuses self-role changes and refuses changes to `super_admin` accounts.
+- `fieldmind-submit-assessment`: validates the exact questionnaire version, all 42 expected answer IDs, and each answer's allowed numeric range; computes the draft follow-up summary on the server; and inserts the record using the authenticated user's JWT so database RLS still applies.
 
 Both functions:
 - require an authenticated bearer token and validate it with Supabase Auth;
@@ -26,6 +27,7 @@ Both functions:
    ```sh
    supabase functions deploy fieldmind-superadmin-results
    supabase functions deploy fieldmind-admin-users
+supabase functions deploy fieldmind-submit-assessment
    ```
 4. Confirm the project has the expected server-side environment variables: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. Supabase normally provides these in the Edge Function environment. Never put the service-role key in GitHub, `supabase.js`, HTML, or browser code.
 5. Keep the GitHub Pages app on its current production version until staging checks pass. A push to the `main` branch triggers GitHub Pages deployment; this development branch does not deploy through the repository's current workflow.
@@ -39,6 +41,8 @@ Both functions:
 - A `super_admin` cannot demote themselves or modify another `super_admin` using the user-management function.
 - A `super_admin` can assign only the three permitted non-super-admin roles.
 - A normal user still cannot read other users' assessment rows through the browser client.
+- The submission function rejects missing/extra answer IDs, invalid answer values, unsupported questionnaire versions, and unauthenticated requests.
+- A worker submission is saved with the authenticated user's ID; the client cannot choose another user's ID or submit a precomputed result.
 - The CORS preflight succeeds from the published GitHub Pages origin.
 - Check Supabase logs for errors, without copying sensitive response bodies into tickets or chat.
 
