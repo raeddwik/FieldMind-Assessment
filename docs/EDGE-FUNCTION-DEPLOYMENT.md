@@ -34,6 +34,10 @@ Authorization differs by function:
 5. Confirm the project has the expected server-side environment variables: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. Supabase normally provides these in the Edge Function environment. Never put the service-role key in GitHub, `supabase.js`, HTML, or browser code.
 6. Keep the GitHub Pages app on its current production version until staging checks pass. A push to the `main` branch triggers GitHub Pages deployment; this development branch does not deploy through the repository's current workflow.
 
+## Detailed staging runbook
+
+Follow [`STAGING-VERIFICATION.md`](./STAGING-VERIFICATION.md) for read-only SQL privilege checks, synthetic-data tests, expected outcomes, and stop conditions. It does not deploy functions or apply migrations.
+
 ## Required staging tests
 
 - Signed-out requests to all three functions are rejected.
