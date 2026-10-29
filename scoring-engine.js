@@ -133,10 +133,16 @@
         validated: false
       },
       criticalIndicators: {
-        status: positiveSafetyItems.length ? "requires_human_review" : "no_positive_response_recorded",
+        status: positiveSafetyItems.length
+          ? "requires_human_review"
+          : declinedSafetyItems.length
+            ? "safety_answer_declined"
+            : "no_positive_response_recorded",
         positiveCount: positiveSafetyItems.length,
+        declinedCount: declinedSafetyItems.length,
         totalItems: criticalItems.length,
         positiveItemIds: positiveSafetyItemIds,
+        declinedItemIds: declinedSafetyItems.map(item => item.id),
         immediateDanger,
         selfHarmThoughts,
         clinicalInterpretation: null
