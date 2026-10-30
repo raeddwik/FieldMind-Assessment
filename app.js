@@ -19,14 +19,8 @@
   const panels = ["auth-panel", "app-panel", "admin-panel"];
 
   const criticalIds = new Set([
-    "critical_01",
-    "critical_02",
-    "critical_03",
-    "critical_04",
-    "critical_05",
-    "critical_06",
-    "critical_07",
-    "critical_08"
+    "safe_01",
+    "safe_02"
   ]);
 
   const roleLabels = {
@@ -224,11 +218,10 @@ async function setLoggedIn(nextSession) {
     const isCriticalYes = criticalIds.has(item.id) &&
       picked && Number(picked.value) === 1;
 
-    // Any non-zero response to dep_09 (self-harm/suicidal thoughts frequency item)
-    // also prompts a confidential human review; this is not a risk classification.
-    const isSelfHarmFrequencyItem = item.id === "dep_09";
+    // A "yes" to either safety question opens a supportive notice; this is not a diagnosis.
+    const isSelfHarmFrequencyItem = item.id === "safe_01";
     const selfHarmFrequencyPositive = isSelfHarmFrequencyItem &&
-      picked && Number(picked.value) > 0;
+      picked && Number(picked.value) === 1;
 
     alert.style.display =
       isCriticalYes || selfHarmFrequencyPositive ? "block" : "none";
@@ -296,10 +289,10 @@ async function setLoggedIn(nextSession) {
           line-height: 1.8;
         "
       >
-        <strong>تنبيه مهم</strong>
+        <strong>يمكنك طلب المساعدة بسرية</strong>
         <p>
-          هذه الحالة تشير إلى وجود أعراض تحتاج إلى مراجعة طبيب أو معالج نفسي متخصص،
-          فلا تتردد في طلب المساعدة، وتأكد أننا نحترم خصوصيتك.
+          إذا كانت إجابتك تعكس ما تمر به، يمكنك التحدث مع شخص مؤهل أو طلب دعم مناسب.
+          هذا السؤال لا يصدر تشخيصًا، ولا ينبغي أن يكون سببًا للعقوبة أو الوصم.
         </p>
         <p>
           إذا كان هناك خطر فوري على سلامتك أو سلامة شخص آخر، فاطلب المساعدة الطبية العاجلة
@@ -371,6 +364,15 @@ async function setLoggedIn(nextSession) {
       );
     }
 
+    // لا يكفي إخفاء شاشة الموافقة بعد البدء؛ نتحقق من الموافقة الصريحة مجددًا قبل الإرسال.
+    if (!$("consent")?.checked) {
+      return message(
+        "form-message",
+        "يرجى تأكيد الموافقة على معالجة الإجابات قبل إرسال التقييم.",
+        true
+      );
+    }
+
     if (!db() || !session) {
       return message(
         "form-message",
@@ -383,156 +385,87 @@ async function setLoggedIn(nextSession) {
     message("form-message", "جارٍ حفظ التقييم...");
 
     try {
-      const scoringEngine = window.FIELD_MIND_SCORING_ENGINE;
+      const { data: submission, error: submitError } = await db().functions.invoke(
+        "fieldmind-submit-assessment",
+        {
+          body: {
+            scale_version: config.version,
+            answers: answers,
+            consent_given: $("consent").checked
+          }
+        }
+      );
 
-      if (
-        !scoringEngine ||
-        typeof scoringEngine.calculate !== "function"
-      ) {
+      if (submitError || !submission?.ok || !submission?.result) {
+        console.error("Assessment submission failed:", submitError || submission?.error);
         return message(
           "form-message",
-          "محرك الحساب غير متاح. يرجى تحديث الصفحة والمحاولة مجددًا.",
+          "لم نتمكن من التحقق من التقييم وحفظه على الخادم. لم يتم تأكيد الحفظ؛ يرجى المحاولة لاحقًا.",
           true
         );
       }
 
-      let calculationResult;
-
-      try {
-        calculationResult = scoringEngine.calculate(answers);
-      } catch (error) {
-        console.error("Scoring error:", error);
-
-        return message(
-          "form-message",
-          "تعذر حساب الدرجات. يرجى مراجعة إعدادات المقياس.",
-          true
-        );
-      }
-
-      if (
-        calculationResult.status !== "calculation_preview_only"
-      ) {
-        return message(
-          "form-message",
-          "تعذر إكمال الحساب بسبب وجود إجابات أو إعدادات غير صالحة.",
-          true
-        );
-      }
-
-      const payload = {
-        user_id: session.user.id,
-        scale_version: config.version,
-        answers: answers,
-        result: calculationResult,
-        consent_given: true
-      };
-
-      const { error } = await db()
-        .from("assessments")
-        .insert(payload);
-
-      if (error) {
-        console.error("Assessment save failed:", error);
-
-        return message(
-          "form-message",
-          "لم نتمكن من حفظ التقييم. تحقق من إعداد قاعدة البيانات والصلاحيات.",
-          true
-        );
-      }
+      const calculationResult = submission.result;
 
       $("assessment-form").classList.add("hidden");
       $("start-view").classList.add("hidden");
       $("result-view").classList.remove("hidden");
 
       const domainResults = calculationResult.domains || {};
-      const domainLabels = {
-        depression: "نسبة وجود أعراض اكتئابية",
-        anxiety: "نسبة وجود أعراض القلق",
-        burnout: "نسبة وجود أعراض الاحتراق النفسي",
-        sleep_fatigue: "نسبة وجود مشاكل النوم والإجهاد",
-        psychosocial_stress: "نسبة الضغوط النفسية والاجتماعية في العمل",
-        functional_impact: "نسبة وجود تأثير وظيفي",
-        psychological_safety: "نسبة السلامة النفسية في بيئة العمل",
-        positive_mental_health: "نسبة الصحة النفسية الإيجابية والمرونة",
-        job_satisfaction: "نسبة وجود الرضا الوظيفي"
-      };
-      const scoreLines = Object.entries(domainResults)
-        .filter(([id]) => id !== "critical_indicators")
-        .map(([id, domain]) => {
-          const score = typeof domain.score === "number"
-            ? domain.score.toFixed(1) + "%"
-            : "غير متاح";
-          return (domainLabels[id] || domain.title || id) + ": " + score + ".";
-        })
-        .join("\n");
+      const domainHtml = Object.entries(domainResults).map(([id, domain]) => {
+        if (domain.kind === "flag") {
+          const positiveCount = Number(domain.positiveCount || 0);
+          const declinedCount = Number(domain.declinedCount || 0);
+
+          const status = positiveCount > 0
+            ? "توجد إجابة تستحق استيضاحًا متخصصًا"
+            : declinedCount > 0
+              ? "اختار المستخدم عدم الإجابة عن سؤال أو أكثر في هذا الجزء"
+              : "لم تُسجّل إجابة إيجابية في هذا الجزء";
+
+          return `<li><strong>${escapeHtml(domain.title || id)}:</strong> ${status}. <span class="small">هذه النتيجة وصفية ولا تمثل تشخيصًا، وعدم الإجابة لا يثبت أو ينفي وجود مشكلة نفسية.</span></li>`;
+        }
+        const average = typeof domain.average === "number" ? domain.average.toFixed(1) + " / 4" : "غير متاح";
+        const band = domain.descriptiveBand || "";
+        return `<li><strong>${escapeHtml(domain.title || id)}:</strong> ${average} — ${escapeHtml(band)}.</li>`;
+      }).join("");
+
+      const followUp = calculationResult.followUp || {};
+      const followUpText = `
+        <section class="index-summary" style="margin:18px 0;padding:16px;border:1px solid #d7dee8;border-radius:10px">
+          <h3>خلاصة المتابعة المقترحة</h3>
+          <p><strong>${escapeHtml(followUp.label || "تحتاج النتيجة إلى مراجعة")}</strong></p>
+          <p>${escapeHtml(followUp.recommendation || "تُراجع الإجابات مع شخص مؤهل.")}</p>
+          <p class="small">هذه أولوية متابعة داخلية تجريبية وليست درجة خطورة سريرية أو تشخيصًا. لا تستخدم وحدها لاتخاذ قرار وظيفي أو تحديد اللياقة للعمل.</p>
+        </section>`;
 
       const critical = calculationResult.criticalIndicators || {};
       const criticalItems = Array.isArray(config.items)
         ? config.items.filter(item => item.domain === "critical_indicators")
         : [];
-      const positiveCriticalIds = Array.isArray(critical.positiveItemIds)
-        ? critical.positiveItemIds
-        : [];
-      const positiveCriticalLabels = criticalItems
-        .filter(item => positiveCriticalIds.includes(item.id))
-        .map(item => item.text);
+      const positiveIds = Array.isArray(critical.positiveItemIds) ? critical.positiveItemIds : [];
+      const criticalLabels = criticalItems.filter(item => positiveIds.includes(item.id)).map(item => item.text);
+      const declinedSafety = Number(critical.declinedCount || 0) > 0;
+      const criticalDetails = criticalLabels.length
+        ? '<div class="notice"><strong>توجد إجابة تستلزم مراجعة بشرية داعمة.</strong><p>' +
+          escapeHtml(criticalLabels.join("؛ ")) +
+          '</p><p>تواصل مع العامل مباشرةً وبسرية للتحقق من السلامة الحالية. إذا كان هناك خطر فوري، فعّل إجراء السلامة المعتمد واطلب المساعدة الطبية العاجلة عند الحاجة.</p></div>'
+        : declinedSafety
+          ? '<p class="small">اختار المستخدم عدم الإجابة عن سؤال سلامة واحد أو أكثر؛ لا يمكن استنتاج وجود الخطر أو غيابه من ذلك. أتح فرصة سرية واختيارية للتواصل مع شخص مؤهل.</p>'
+          : '<p class="small">لم تُسجّل إجابة إيجابية في أسئلة السلامة. وهذا لا يثبت غياب الخطر ولا يمنع طلب المساعدة عند الحاجة.</p>';
 
-      // Any non-zero response to dep_09 requires separate human follow-up.
-      const selfHarmItem = config.items.find(item => item.id === "dep_09");
-      const selfHarmResponsePositive =
-        typeof answers.dep_09 === "number" && answers.dep_09 > 0;
-      if (selfHarmResponsePositive && selfHarmItem &&
-          !positiveCriticalLabels.includes(selfHarmItem.text)) {
-        positiveCriticalLabels.unshift(selfHarmItem.text);
-      }
-
-      const criticalDetails = positiveCriticalLabels.length
-        ? "\n\nإجابات تستلزم مراجعة مباشرة من مختص مؤهل:\n" +
-          positiveCriticalLabels.join("؛ ") +
-          ".\nإذا كانت الإجابة المتعلقة بالانتحار أو إيذاء النفس تعكس خطرًا فوريًا حاليًا، فاطلب مساعدة طبية عاجلة أو تواصل فورًا مع خدمات الطوارئ المحلية."
-        : "\n\nإجابات تستلزم مراجعة مباشرة من مختص مؤهل: لا توجد إجابات إيجابية مسجلة في هذا القسم. لا يستبعد ذلك الحاجة إلى الدعم أو التقييم عند الحاجة.";
-
-      const indices = calculationResult.experimentalIndices || {};
-      const formatIndex = value =>
-        typeof value === "number" ? value.toFixed(1) : "غير متاح";
-      const riskClassByLevel = {
-        Low: "status-positive",
-        Moderate: "status-caution",
-        High: "status-danger",
-        Critical: "status-critical"
-      };
-      const riskClass = riskClassByLevel[indices.riskLevel] || "status-neutral";
-      const indexSummary = typeof indices.opri === "number" &&
-          typeof indices.opfScore === "number"
-        ? `
-          <section class="index-summary" style="margin:18px 0;padding:16px;border:1px solid #d7dee8;border-radius:10px">
-            <h3>المؤشرات الإرشادية الأولية</h3>
-            <p><strong>مستوى اللياقة النفسية المهني (OPF Score):</strong> <span class="${indices.opfScore >= 65 ? "status-positive" : indices.opfScore >= 35 ? "status-caution" : "status-danger"}">${formatIndex(indices.opfScore)} / 100</span></p>
-            <p><strong>مستوى الخطورة النفسية (OPRI):</strong> <span class="${riskClass}">${formatIndex(indices.opri)} / 100</span></p>
-            <p><strong>مستوى الخطورة:</strong> <span class="status-pill ${riskClass}">${escapeHtml(indices.riskLevel || "غير متاح")}</span></p>
-            <p><strong>الإجراء المقترح:</strong></p>
-            <div class="recommendation-box ${riskClass}">${escapeHtml(indices.recommendedAction || "تُراجع النتيجة مع مختص مؤهل.")}</div>
-            <p class="small">هذه مؤشرات تجريبية إرشادية وليست مقياسًا معتمدًا سريريًا. لا تستخدم وحدها لاتخاذ قرار وظيفي أو لتحديد اللياقة للعمل.</p>
-          </section>`
-        : '<p>تعذر حساب المؤشرين؛ يرجى مراجعة إعدادات المقياس.</p>';
-
-      const domainHtml = Object.entries(domainResults)
-        .filter(([id]) => id !== "critical_indicators")
-        .map(([id, domain]) => {
-          const score = typeof domain.score === "number"
-            ? domain.score.toFixed(1) + "%"
-            : "غير متاح";
-          return `<li><strong>${escapeHtml(domainLabels[id] || domain.title || id)}:</strong> ${score}</li>`;
-        }).join("");
+      const satisfaction = domainResults.job_satisfaction;
+      const satisfactionNote = satisfaction && typeof satisfaction.average === "number"
+        ? '<p><strong>الرضا الوظيفي:</strong> متوسط الموافقة ' + satisfaction.average.toFixed(1) +
+          ' من 4. يُستخدم لاستكشاف تجربة العمل، وليس لتقييم الحالة النفسية تشخيصيًا.</p>'
+        : "";
 
       $("result-summary").innerHTML =
         '<p><strong>تم حفظ إجاباتك بنجاح.</strong></p>' +
-        indexSummary +
-        '<h3>نتائج محاور التقييم</h3><ul>' + domainHtml + '</ul>' +
-        '<div style="white-space:pre-line">' + escapeHtml(criticalDetails) + '</div>' +
-        '<p class="small">هذا تقييم إرشادي أولي وليس تشخيصًا نفسيًا. المؤشرات والأوزان وحدود التصنيف تجريبية وتحتاج إلى تحقق؛ لا تستخدم النتيجة وحدها لاتخاذ قرارات وظيفية أو تحديد اللياقة للعمل. أي إجابة حرجة تستلزم مراجعة بشرية مناسبة بصرف النظر عن المؤشر الإجمالي.</p>';
+        followUpText +
+        '<h3>ملخص المحاور</h3><ul>' + domainHtml + '</ul>' +
+        satisfactionNote + criticalDetails +
+        '<p class="small">استبيان FieldMind الداخلي من تصميم صاحب المشروع، وقواعده تجريبية وغير معتمدة. لا يثبت وجود اضطراب نفسي أو ينفيه، ولا يصدر قرارًا بشأن اللياقة للعمل. يمكن طلب المساعدة في أي وقت، بصرف النظر عن النتيجة.</p>';
       if (isAdmin) {
         await loadAdminRecords();
       }
@@ -549,48 +482,25 @@ async function setLoggedIn(nextSession) {
     }
   }
 
+  // لا نقرأ سجلات التقييمات مباشرة من المتصفح حتى لو كان المستخدم مديرًا.
+  // عرض النتائج الحساسة يتم فقط عبر Edge Function التي تتحقق من super_admin على الخادم.
   async function loadAdminRecords() {
-    if (!isAdmin || !db()) return;
+    if (!isAdmin) return;
 
-    message("admin-message", "جارٍ تحميل السجلات...");
-
-    const { data, error } = await db()
-      .from("assessments")
-      .select("id,user_id,created_at,result")
-      .order("created_at", { ascending: false })
-      .limit(100);
-
-    if (error) {
-      console.error("Admin records error:", error);
-
-      $("admin-records").innerHTML =
-        '<tr><td colspan="3">تعذر تحميل السجلات. تحقق من صلاحيات الإدارة.</td></tr>';
-
-      return message(
-        "admin-message",
-        "تعذر تحميل السجلات.",
-        true
-      );
+    const records = $("admin-records");
+    if (records) {
+      records.innerHTML =
+        '<tr><td colspan="3">عرض السجلات متاح فقط من لوحة النتائج المحمية للحساب المخوّل.</td></tr>';
     }
-
-    $("admin-records").innerHTML = data.length
-      ? data.map((row) => `
-          <tr>
-            <td>${escapeHtml(
-              new Date(row.created_at).toLocaleString("ar-EG")
-            )}</td>
-            <td>${escapeHtml(row.user_id)}</td>
-            <td>${escapeHtml(row.result?.status || "مسجل")}</td>
-          </tr>
-        `).join("")
-      : '<tr><td colspan="3">لا توجد سجلات حتى الآن.</td></tr>';
 
     message(
       "admin-message",
-      `عدد السجلات المعروضة: ${data.length}`
+      isSuperAdmin
+        ? "استخدم لوحة النتائج المحمية لعرض السجلات."
+        : "لا تتوفر لهذا الدور صلاحية عرض سجلات التقييمات."
     );
   }
-  
+
   // تحميل جميع نتائج التقييمات عبر دالة الخادم المحمية.
   async function fetchAllDashboardRows() {
     if (!isSuperAdmin || !db()) {
@@ -678,14 +588,19 @@ if (tbody) {
       ? Object.entries(domains)
           .map(([key, value]) => {
             if (!value || typeof value !== "object") return key + ": " + value;
-            const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
-            const positiveResourceDomain = ["psychological_safety", "positive_mental_health", "job_satisfaction"].includes(key);
-            const direction = positiveResourceDomain
-              ? " (درجة تأييد موارد إيجابية؛ الأعلى يعني موارد مُبلّغًا عنها أكثر، وليس أعراضًا أكثر)"
-              : " (درجة وصفية للأعراض أو الصعوبات؛ الأعلى يعني تكرارًا أكبر للإجابات الدالة على الصعوبة)";
-            const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
-              ? "؛ المؤشر العكسي البحثي غير المعتمد: " + value.riskOrientedScore.toFixed(1) + "%" : "";
-            return (value.title || key) + ": " + score + direction + risk;
+              const average = typeof value.average === "number"
+                ? value.average.toFixed(1) + " / 4"
+                : "—";
+              const description = value.descriptiveBand
+                ? " — " + value.descriptiveBand
+                : value.kind === "flag"
+                  ? (Number(value.positiveCount) > 0
+                    ? " — توجد إجابة تستحق استيضاحًا متخصصًا"
+                    : Number(value.declinedCount) > 0
+                      ? " — اختار المستخدم عدم الإجابة عن سؤال أو أكثر"
+                      : " — لم تُسجّل إجابة إيجابية")
+                  : "";
+              return (value.title || key) + ": " + average + description;
           })
           .join("، ")
       : "لا توجد درجات مسجلة";
@@ -788,14 +703,19 @@ if (resetPage) dashboardPage = 0;
         ? Object.entries(domains)
             .map(([key, value]) => {
               if (!value || typeof value !== "object") return key + ": " + value;
-              const score = typeof value.score === "number" ? value.score.toFixed(1) + "%" : "—";
-              const positiveResourceDomain = ["psychological_safety", "positive_mental_health", "job_satisfaction"].includes(key);
-              const direction = positiveResourceDomain
-                ? " (درجة تأييد موارد إيجابية؛ الأعلى يعني موارد مُبلّغًا عنها أكثر، وليس أعراضًا أكثر)"
-                : " (درجة وصفية للأعراض أو الصعوبات؛ الأعلى يعني تكرارًا أكبر للإجابات الدالة على الصعوبة)";
-              const risk = typeof value.riskOrientedScore === "number" && value.riskOrientedScore !== value.score
-                ? "؛ المؤشر العكسي البحثي غير المعتمد: " + value.riskOrientedScore.toFixed(1) + "%" : "";
-              return (value.title || key) + ": " + score + direction + risk;
+              const average = typeof value.average === "number"
+                ? value.average.toFixed(1) + " / 4"
+                : "—";
+              const description = value.descriptiveBand
+                ? " — " + value.descriptiveBand
+                : value.kind === "flag"
+                  ? (Number(value.positiveCount) > 0
+                    ? " — توجد إجابة تستحق استيضاحًا متخصصًا"
+                    : Number(value.declinedCount) > 0
+                      ? " — اختار المستخدم عدم الإجابة عن سؤال أو أكثر"
+                      : " — لم تُسجّل إجابة إيجابية")
+                  : "";
+              return (value.title || key) + ": " + average + description;
             })
             .join("، ")
         : "لا توجد درجات مسجلة";
@@ -873,12 +793,10 @@ $("export-results-button")?.addEventListener("click", () => {
 
   const headers = [
     "تاريخ التقييم",
-    "البريد الإلكتروني",
-    "حالة النتيجة",
-    "OPF Score",
-    "OPRI",
-    "Risk Level",
-    "Recommended Action"
+    "معرّف الحساب",
+    "نسخة الاستبيان",
+    "أولوية المتابعة",
+    "ملخص المحاور الوصفي"
   ];
 
   const csvCell = (value) => {
@@ -893,33 +811,34 @@ $("export-results-button")?.addEventListener("click", () => {
   };
 
   const rows = visibleDashboardRows.map((row) => {
-    const indices = row.result?.experimentalIndices ?? row.experimentalIndices ?? {};
-    const email = row.email || row.user_email || row.email_address || "";
+    const result = row.result || {};
+    const domains = result.domains || row.domains || {};
+    const domainSummary = Object.entries(domains).map(([key, value]) => {
+      if (!value || typeof value !== "object") return key + ": —";
+      if (typeof value.average === "number") {
+        return (value.title || key) + ": " + value.average.toFixed(1) + "/4";
+      }
+      if (value.kind === "flag") {
+        return (value.title || key) + ": " +
+          (Number(value.positiveCount) > 0
+            ? "تحتاج استيضاحًا متخصصًا"
+            : Number(value.declinedCount) > 0
+              ? "اختار المستخدم عدم الإجابة عن سؤال أو أكثر"
+              : "لا توجد إجابة إيجابية مسجلة");
+      }
+      return (value.title || key) + ": —";
+    }).join("؛ ");
     const dateOnly = row.created_at
       ? new Date(row.created_at).toLocaleDateString("en-CA")
       : "";
-    // Treat OPF and OPRI as a normalized pair. Legacy raw OPRI values can
-    // fall inside 0–100, so range checking alone cannot identify them.
-    const validNormalizedPair =
-      typeof indices.opfScore === "number" &&
-      Number.isFinite(indices.opfScore) &&
-      indices.opfScore >= 0 && indices.opfScore <= 100 &&
-      typeof indices.opri === "number" &&
-      Number.isFinite(indices.opri) &&
-      indices.opri >= 0 && indices.opri <= 100;
+    const followUp = result.followUp?.label || row.followUp?.label || "";
 
     return [
       dateOnly,
-      email,
-      ["calculation_preview_only", "pending_scale_configuration"].includes(
-        row.status || row.result?.status
-      )
-        ? ""
-        : (row.status || row.result?.status || ""),
-      validNormalizedPair ? indices.opfScore.toFixed(1) : "",
-      validNormalizedPair ? indices.opri.toFixed(1) : "",
-      validNormalizedPair ? (indices.riskLevel || "") : "",
-      validNormalizedPair ? (indices.recommendedAction || "") : ""
+      row.user_id || "",
+      row.scale_version || result.scaleVersion || "",
+      followUp,
+      domainSummary
     ];
   });
 
