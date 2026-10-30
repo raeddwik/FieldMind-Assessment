@@ -106,6 +106,8 @@
     const button = $("refresh-users-button");
     const messageEl = $("users-message");
     const tbody = $("admin-users");
+    const inviteBox = $("admin-invite-box");
+    if (inviteBox) inviteBox.style.display = visible ? "" : "none";
 
     if (button) {
       const heading = button.closest(".section-heading");
