@@ -1042,6 +1042,53 @@ $("results-next")?.addEventListener("click", () => {
     }
   }
 
+
+  // دعوة مستخدم جديد بصلاحية worker فقط من خلال دالة الخادم.
+  async function inviteWorker(event) {
+    event.preventDefault();
+    if (!isSuperAdmin || !db()) {
+      message("users-message", "ليس لديك صلاحية تنفيذ هذا الإجراء.", true);
+      return;
+    }
+
+    const emailInput = $("new-user-email");
+    const button = $("invite-user-button");
+    const email = emailInput.value.trim().toLowerCase();
+    if (!email || !emailInput.checkValidity()) {
+      emailInput.reportValidity();
+      return;
+    }
+
+    button.disabled = true;
+    message("users-message", "جارٍ إنشاء الحساب وإرسال دعوة الدخول...");
+
+    try {
+      const { data, error } = await db().functions.invoke(
+        "fieldmind-admin-users",
+        { body: { action: "invite_worker", email } }
+      );
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      emailInput.value = "";
+      await loadAdminUsers();
+      message("users-message", "تم إنشاء حساب المستخدم العادي وإرسال دعوة الدخول إلى " + email + ".");
+    } catch (error) {
+      console.error("Invite user error:", error);
+      const detail = typeof error?.message === "string" ? error.message : "";
+      message(
+        "users-message",
+        detail.includes("already") || detail.includes("registered")
+          ? "تعذر إنشاء الحساب: يبدو أن هذا البريد مسجل بالفعل. حدّث قائمة الحسابات للتحقق منه."
+          : "تعذر إنشاء الحساب أو إرسال الدعوة. تحقق من البريد الإلكتروني وإعدادات البريد ثم أعد المحاولة.",
+        true
+      );
+    } finally {
+      button.disabled = false;
+    }
+  }
+
   // تسجيل الدخول برابط البريد الإلكتروني.
   $("login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -1168,6 +1215,9 @@ $("results-next")?.addEventListener("click", () => {
     "click",
     loadAdminUsers
   );
+
+  // إرسال دعوة لمستخدم عادي جديد.
+  $("invite-user-form").addEventListener("submit", inviteWorker);
 
   // حفظ الدور المحدد لكل مستخدم.
   $("admin-users").addEventListener("click", (event) => {
