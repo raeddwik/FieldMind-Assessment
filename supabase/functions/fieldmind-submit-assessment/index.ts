@@ -35,14 +35,18 @@ Deno.serve(async(req:Request)=>{
  const items = CONFIG.items as readonly any[];
  const criticalItems = items.filter(item => item.domain === "critical_indicators");
  const positiveItemIds = criticalItems.filter(item => answers[item.id] === 1).map(item => item.id);
+ const recentThoughtItemIds = positiveItemIds.filter(id => id === "safe_01");
+ const immediateDangerItemIds = positiveItemIds.filter(id => id === "safe_02");
  const declined = criticalItems.filter(item => answers[item.id] === 2);
  const declinedCount = declined.length;
  const declinedItemIds = declined.map(item => item.id);
- const safetyStatus = positiveItemIds.length
-   ? "requires_human_review"
-   : declinedCount > 0
-     ? "answer_declined"
-     : "no_automated_classification";
+ const safetyStatus = immediateDangerItemIds.length > 0
+   ? "immediate_safety_contact_required"
+   : recentThoughtItemIds.length > 0
+     ? "prompt_confidential_human_review"
+     : declinedCount > 0
+       ? "answer_declined"
+       : "no_automated_classification";
 
  // Return descriptive domain summaries from the server so the saved result and
  // the user's result screen use the same trusted server response.
@@ -128,11 +132,18 @@ Deno.serve(async(req:Request)=>{
      recommendation: "اختار العامل عدم الإجابة عن سؤال سلامة واحد أو أكثر. لا يُفسر ذلك على أنه وجود خطر أو غيابه؛ تُتاح فرصة سرية واختيارية للتحدث مع شخص مؤهل دون ضغط أو عقوبة."
    };
  }
- if (positiveItemIds.length > 0) {
+ if (recentThoughtItemIds.length > 0) {
    followUp = {
      level: "prompt_human_review",
-     label: "مراجعة بشرية مباشرة",
-     recommendation: "تستلزم الإجابة تواصلًا بشريًا مباشرًا وسريًا من شخص مؤهل للتحقق من السلامة الحالية وعرض المساعدة. لا يُستنتج مستوى الخطر من الاستبيان وحده."
+     label: "مراجعة بشرية سرية في أقرب وقت",
+     recommendation: "تستلزم الإجابة تواصلًا بشريًا مباشرًا وسريًا من شخص مؤهل للاستماع والتحقق من الاحتياج الحالي للمساندة. لا يُستنتج مستوى الخطر من الاستبيان وحده."
+   };
+ }
+ if (immediateDangerItemIds.length > 0) {
+   followUp = {
+     level: "immediate_safety_contact",
+     label: "تحقق فوري من السلامة",
+     recommendation: "تشير الإجابة إلى أن العامل قد لا يكون قادرًا حاليًا على الحفاظ على سلامته أو سلامة الآخرين. يجب تفعيل إجراء الاستجابة العاجلة المعتمد بالمؤسسة والتواصل فورًا وبشكل مباشر مع شخص مؤهل؛ وعند وجود خطر وشيك تُطلب خدمات الطوارئ المحلية. لا يُستخدم الاستبيان وحده لتقدير مستوى الخطر."
    };
  }
  const result={
@@ -141,7 +152,7 @@ Deno.serve(async(req:Request)=>{
    previewOnly:true,
    domains,
    followUp,
-   criticalIndicators:{positiveItemIds,declinedCount,declinedItemIds,status:safetyStatus},
+   criticalIndicators:{positiveItemIds,recentThoughtItemIds,immediateDangerItemIds,declinedCount,declinedItemIds,status:safetyStatus},
    overallClinicalScore:null,
    classification:null,
    clinicalValidation:"not_established",
