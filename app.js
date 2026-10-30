@@ -171,6 +171,11 @@ async function setLoggedIn(nextSession) {
   const adminBanner = $("admin-banner");
   if (adminBanner) {
     adminBanner.classList.toggle("hidden", !isAdmin);
+    adminBanner.textContent = isSuperAdmin
+      ? "تم التعرف على حساب المدير الأعلى (Super Admin). لوحتا النتائج وإدارة الحسابات متاحتان لهذا الحساب."
+      : isAdmin
+        ? "تم التعرف على حساب المدير (Admin). لا تتاح له لوحة النتائج الشاملة أو إدارة الحسابات."
+        : "";
   }
 
   const adminPanel = $("admin-panel");
@@ -191,6 +196,8 @@ async function setLoggedIn(nextSession) {
 
     if (isSuperAdmin) {
       await loadAdminUsers();
+      // Load the protected results dashboard automatically for the super-admin.
+      $("refresh-results-button")?.click();
     }
   } else {
     if (adminPanel) {
@@ -902,6 +909,7 @@ $("results-next")?.addEventListener("click", () => {
       );
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       const users = data?.users;
 
