@@ -1054,6 +1054,7 @@ $("results-next")?.addEventListener("click", () => {
       const { error } = await db().auth.signInWithOtp({
         email,
         options: {
+          shouldCreateUser: false,
           emailRedirectTo: window.location.href.split("#")[0]
         }
       });
