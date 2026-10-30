@@ -1,6 +1,5 @@
-
-const SUPABASE_URL = "https://qgjdtxjsvauhtqaaebly.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_UQXQgvPHUu158Fdb3PLPwA_owTViu06";
+const SUPABASE_URL = "https://qjmolklafyqwsvaasyhd.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_K16GJJCaVpGNS3mdAwDfAg_8cE8BxuR";
 window.fieldMindSupabase = null;
 
 if (window.supabase) {
