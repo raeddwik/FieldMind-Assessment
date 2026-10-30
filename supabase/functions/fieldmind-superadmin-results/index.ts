@@ -78,5 +78,17 @@ Deno.serve(async (req) => {
     .range(offset, offset + limit - 1);
 
   if (error) return jsonResponse({ error: "Unable to load assessment results" }, 500, req);
-  return jsonResponse({ rows: data ?? [], total: count ?? 0, offset, limit }, 200, req);
+  const rows = data ?? [];
+  const userIds = [...new Set(rows.map((row: any) => row.user_id).filter(Boolean))];
+  const emailEntries = await Promise.all(userIds.map(async (userId) => {
+    const { data: userData, error: userError } = await adminClient.auth.admin.getUserById(userId);
+    if (userError) {
+      console.error("Unable to resolve assessment owner email", userId, userError.message);
+      return [userId, null] as const;
+    }
+    return [userId, userData.user?.email ?? null] as const;
+  }));
+  const emailByUserId = new Map(emailEntries);
+  const rowsWithEmail = rows.map((row: any) => ({ ...row, user_email: emailByUserId.get(row.user_id) ?? null }));
+  return jsonResponse({ rows: rowsWithEmail, total: count ?? 0, offset, limit }, 200, req);
 });
