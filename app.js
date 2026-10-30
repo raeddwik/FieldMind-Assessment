@@ -838,7 +838,7 @@ $("export-results-button")?.addEventListener("click", () => {
     ];
     const domainSummary = displayOrder.filter(([id]) => typeof domains[id]?.average === "number")
       .map(([id, label]) => label + ": " + Number(domains[id].average).toFixed(1) + "/4").join("؛ ");
-    const dateOnly = row.created_at ? new Date(row.created_at).toISOString().slice(0, 10) : "";
+    const dateOnly = row.created_at ? new Date(row.created_at).toLocaleDateString("en-CA", { timeZone: "Africa/Cairo" }) : "";
     const overall = result.overallFollowUpCategory ||
       (["urgent_safety", "immediate_safety_contact"].includes(result.followUp?.level)
         ? "عرض عاجل على متخصص"
