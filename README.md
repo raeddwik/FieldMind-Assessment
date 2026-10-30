@@ -1,6 +1,6 @@
 # FieldMind — Occupational Mental Health Assessment
 
-FieldMind is an Arabic, right-to-left web app for an **internal, preliminary occupational mental-health and wellbeing questionnaire**. The current working branch is `fieldmind-internal-screening-v1`; its assessment is a custom 42-item draft.
+FieldMind is an Arabic, right-to-left web app for an **internal, preliminary occupational mental-health and wellbeing questionnaire**. The current published build is a restricted-account management demonstration connected to Supabase Staging. The questionnaire is a custom 42-item draft.
 
 ## Status and limits
 
@@ -8,7 +8,8 @@ FieldMind is an Arabic, right-to-left web app for an **internal, preliminary occ
 - Results are descriptive and intended only to help offer appropriate follow-up. They are not a diagnosis, a validated severity score, or a fitness-for-work decision.
 - The overall OPRI/OPF indices and automatic clinical classification are retired/disabled.
 - Do not use real worker responses until privacy, access controls, retention, professional review, and a staffed human safety-response process are approved and tested.
-- Keep this work on the draft branch. Do not merge or deploy it to production as part of routine testing.
+- The management demo is published at https://raeddwik.github.io/FieldMind-Assessment/ and accepts only pre-provisioned accounts (`shouldCreateUser: false`). The page is publicly reachable, so login restriction must not be confused with private hosting.
+- The demo uses Supabase Staging only and synthetic answers only. See [DEMO-RELEASE.md](./DEMO-RELEASE.md) for deployment verification, current test roles, and limitations.
 
 ## Main files
 
