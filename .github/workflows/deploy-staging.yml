@@ -47,10 +47,12 @@ jobs:
             echo "::error::Expected GitHub Pages CORS origin not found in the function source."
             exit 1
           fi
-          if ! grep -Fq '"http://localhost:8001"' supabase/functions/fieldmind-submit-assessment/index.ts; then
-            echo "::error::Expected local CORS origin not found in the function source."
-            exit 1
-          fi
+          for origin in '"http://localhost:8001"' '"http://localhost:8010"' '"http://127.0.0.1:8010"'; do
+            if ! grep -Fq "${origin}" supabase/functions/fieldmind-submit-assessment/index.ts; then
+              echo "::error::Expected local CORS origin ${origin} not found in the function source."
+              exit 1
+            fi
+          done
           echo "Target and expected CORS origins verified."
 
       - name: Set up Supabase CLI
