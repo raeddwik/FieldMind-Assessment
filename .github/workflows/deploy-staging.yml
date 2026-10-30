@@ -7,50 +7,71 @@ permissions:
   contents: read
 
 concurrency:
-  group: fieldmind-staging-edge-function
+  group: fieldmind-staging-edge-function-deploy
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    name: Deploy approved function to Staging
+  deploy-staging-function:
+    name: Deploy fieldmind-submit-assessment to Staging only
     runs-on: ubuntu-latest
-    environment:
-      name: fieldmind-staging
+    timeout-minutes: 10
+    environment: fieldmind-staging
+    env:
+      PROJECT_ID: ${{ secrets.SUPABASE_STAGING_PROJECT_ID }}
+      EXPECTED_STAGING_PROJECT_ID: qjmolklafyqwsvaasyhd
+      FORBIDDEN_PRODUCTION_PROJECT_ID: qgjdtxjsvauhtqaaebly
+
     steps:
-      - name: Checkout approved staging source
+      - name: Checkout this branch
         uses: actions/checkout@v4
         with:
-          ref: fieldmind-internal-screening-v1
+          persist-credentials: false
 
-      - name: Verify target and deployment scope
+      - name: Verify required secrets and enforce Staging target
         shell: bash
-        env:
-          PROJECT_ID: ${{ secrets.SUPABASE_STAGING_PROJECT_ID }}
         run: |
           set -euo pipefail
-          test "${PROJECT_ID}" = "qjmolklafyqwsvaasyhd" || {
-            echo "Refusing deployment: Staging project ID is missing or incorrect."
+          if [[ -z "${PROJECT_ID}" ]]; then
+            echo "::error::Missing SUPABASE_STAGING_PROJECT_ID repository secret."
             exit 1
-          }
-          test "${PROJECT_ID}" != "qgjdtxjsvauhtqaaebly" || {
-            echo "Refusing deployment to Production."
+          fi
+          if [[ "${PROJECT_ID}" == "${FORBIDDEN_PRODUCTION_PROJECT_ID}" ]]; then
+            echo "::error::Refusing to target the Production project."
             exit 1
-          }
-          test -f supabase/functions/fieldmind-submit-assessment/index.ts
-          grep -Fq 'https://raeddwik.github.io' supabase/functions/fieldmind-submit-assessment/index.ts
-          grep -Fq 'http://localhost:8001' supabase/functions/fieldmind-submit-assessment/index.ts
+          fi
+          if [[ "${PROJECT_ID}" != "${EXPECTED_STAGING_PROJECT_ID}" ]]; then
+            echo "::error::Project ID does not match the approved Staging project. Refusing deployment."
+            exit 1
+          fi
+          if ! grep -Fq '"https://raeddwik.github.io"' supabase/functions/fieldmind-submit-assessment/index.ts; then
+            echo "::error::Expected GitHub Pages CORS origin not found in the function source."
+            exit 1
+          fi
+          for origin in '"http://localhost:8001"' '"http://localhost:8010"' '"http://127.0.0.1:8010"'; do
+            if ! grep -Fq "${origin}" supabase/functions/fieldmind-submit-assessment/index.ts; then
+              echo "::error::Expected local CORS origin ${origin} not found in the function source."
+              exit 1
+            fi
+          done
+          echo "Target and expected CORS origins verified."
 
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v1
         with:
           version: latest
 
-      - name: Deploy only fieldmind-submit-assessment
+      - name: Deploy only the submission Edge Function to Staging
         shell: bash
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          PROJECT_ID: ${{ secrets.SUPABASE_STAGING_PROJECT_ID }}
         run: |
           set -euo pipefail
-          test -n "${SUPABASE_ACCESS_TOKEN}"
-          supabase functions deploy fieldmind-submit-assessment --project-ref "${PROJECT_ID}" --use-api
+          if [[ -z "${SUPABASE_ACCESS_TOKEN}" ]]; then
+            echo "::error::Missing SUPABASE_ACCESS_TOKEN repository secret."
+            exit 1
+          fi
+          # Deliberately deploy one function only. No database commands, migrations,
+          # secrets changes, pruning, or production target are permitted in this workflow.
+          supabase functions deploy fieldmind-submit-assessment \
+            --project-ref "${PROJECT_ID}" \
+            --use-api
