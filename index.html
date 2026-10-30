@@ -17,10 +17,14 @@
       <h1>FieldMind</h1>
       <p>تقييم الصحة النفسية المهنية</p>
     </div>
-    <span class="secure-label">بوابة آمنة</span>
+    <span class="secure-label">نسخة تجريبية</span>
   </header>
 
   <main class="container">
+    <section class="notice" role="note" aria-label="تنبيه النسخة التجريبية">
+      <strong>نسخة تجريبية خاصة للعرض الإداري</strong>
+      <p>يرجى استخدام إجابات افتراضية فقط. لا تُدخل بيانات تعريفية أو إجابات نفسية حقيقية تخصك أو تخص أي عامل. هذه النسخة للعرض واختبار سير العمل، وليست خدمة متابعة سريرية أو أداة لاتخاذ قرارات وظيفية.</p>
+    </section>
     <section class="intro panel">
       <p class="eyebrow">الصحة المهنية · مواقع إنتاج البترول</p>
       <h2>دعنا نساعدك على بصيرة</h2>
@@ -47,7 +51,7 @@
 
     <section id="auth-panel" class="panel">
       <h2>الدخول بالبريد الإلكتروني</h2>
-      <p class="muted">أدخل بريدك الإلكتروني المسجل لاستلام رابط تحقق آمن.</p>
+      <p class="muted">أدخل بريد أحد الحسابات التجريبية المجهزة مسبقًا لاستلام رابط تحقق آمن.</p>
       <form id="login-form">
         <label for="email">البريد الإلكتروني</label>
         <input id="email" name="email" type="email" autocomplete="email" required placeholder="name@example.com">
@@ -61,15 +65,15 @@
         <div><span class="muted">تم تسجيل الدخول باسم</span><strong id="current-email"></strong></div>
         <button id="logout-button" class="secondary" type="button">تسجيل الخروج</button>
       </div>
-      <div id="admin-banner" class="notice hidden">تم التعرف على حساب إداري. ستظهر السجلات الإدارية بعد إعداد صلاحيات قاعدة البيانات.</div>
+      <div id="admin-banner" class="notice hidden">تم التعرف على حساب إداري. يمكنك استعراض السجلات التجريبية المتاحة وفق صلاحيات حسابك.</div>
       <div id="start-view">
         <h2>قبل أن تبدأ</h2>
         <ul class="plain-list">
           <li>خصص عدة دقائق للإجابة دون مقاطعة قدر الإمكان.</li>
           <li>يمكنك إيقاف التقييم قبل إرساله.</li>
-          <li>تُحفظ النتيجة في سجل خاص بحسابك وفق صلاحيات النظام.</li>
+          <li>تُحفظ النتيجة في سجل تجريبي خاص بحسابك. استخدم إجابات افتراضية فقط.</li>
         </ul>
-        <label class="consent"><input id="consent" type="checkbox"> أوافق على إجراء الاستبيان ومعالجة إجاباتي لهذا الغرض الداخلي، بعد الاطلاع على إشعار الخصوصية وسياسة الوصول والاحتفاظ بالبيانات.</label>
+        <label class="consent"><input id="consent" type="checkbox"> أوافق على استخدام إجاباتي الافتراضية لأغراض اختبار النسخة التجريبية، وأفهم أنه لا ينبغي إدخال بيانات شخصية أو إجابات حقيقية تخص أي عامل.</label>
         <button id="begin-button" type="button" disabled>بدء الاستبيان</button>
         <p class="small muted">تنبيه: هذه أسئلة داخلية أولية من تصميم صاحب المشروع وليست مقاييس تشخيصية معتمدة. لا تبدأ الاستخدام التشغيلي قبل اعتماد إجراءات السرية والوصول إلى البيانات ومسار متابعة واضح.</p>
       </div>
