@@ -74,5 +74,5 @@ Deno.serve(async (req) => {
     .range(offset, offset + limit - 1);
 
   if (error) return jsonResponse({ error: "Unable to load assessment results" }, 500);
-  return jsonResponse({ rows: data ?? [], total: count ?? 0, offset, limit });
+  return jsonResponse({ rows: data ?? [], total: count ?? 0, offset, limit }, 200, req);
 });
