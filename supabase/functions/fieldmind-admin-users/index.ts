@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
         email: user.email ?? null,
         roles: rolesByUser.get(user.id) ?? [],
       })),
-    });
+    }, 200, req);
   }
 
   if (body.action === "set_role") {
@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
       .from("user_roles")
       .upsert({ user_id: body.user_id, role: body.role }, { onConflict: "user_id" });
     if (upsertError) return jsonResponse({ error: "Unable to update role" }, 500);
-    return jsonResponse({ ok: true });
+    return jsonResponse({ ok: true }, 200, req);
   }
 
   return jsonResponse({ error: "Unsupported action" }, 400);
