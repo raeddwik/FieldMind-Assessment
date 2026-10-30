@@ -660,7 +660,7 @@ function renderFilteredDashboard(resetPage = true) {
 
   visibleDashboardRows = allDashboardRows.filter(row => {
     const date = row.created_at
-      ? new Date(row.created_at).toISOString().slice(0, 10)
+      ? new Date(row.created_at).toLocaleDateString("en-CA", { timeZone: "Africa/Cairo" })
       : "";
 
     if (from && (!date || date < from)) return false;
