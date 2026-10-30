@@ -421,23 +421,26 @@ async function setLoggedIn(nextSession) {
       $("result-view").classList.remove("hidden");
 
       const domainResults = calculationResult.domains || {};
-      const domainHtml = Object.entries(domainResults).map(([id, domain]) => {
-        if (domain.kind === "flag") {
-          const positiveCount = Number(domain.positiveCount || 0);
-          const declinedCount = Number(domain.declinedCount || 0);
-
-          const status = positiveCount > 0
-            ? "توجد إجابة تستحق استيضاحًا متخصصًا"
-            : declinedCount > 0
-              ? "اختار المستخدم عدم الإجابة عن سؤال أو أكثر في هذا الجزء"
-              : "لم تُسجّل إجابة إيجابية في هذا الجزء";
-
-          return `<li><strong>${escapeHtml(domain.title || id)}:</strong> ${status}. <span class="small">هذه النتيجة وصفية ولا تمثل تشخيصًا، وعدم الإجابة لا يثبت أو ينفي وجود مشكلة نفسية.</span></li>`;
-        }
-        const average = typeof domain.average === "number" ? domain.average.toFixed(1) + " / 4" : "غير متاح";
-        const band = domain.descriptiveBand || "";
-        return `<li><strong>${escapeHtml(domain.title || id)}:</strong> ${average} — ${escapeHtml(band)}.</li>`;
+      const displayOrder = [
+        ["depression", "محور الحالة المزاجية"], ["anxiety", "محور القلق"],
+        ["panic", "محور نوبات الخوف"], ["ocd", "محور الأفكار المزعجة"],
+        ["adjustment", "محور المرونة"], ["sleep", "محور النوم"],
+        ["burnout", "محور الإجهاد الوظيفي"],
+        ["workplace_satisfaction", "محور الرضا عن بيئة العمل"],
+        ["functional_impact", "محور الحياة اليومية"],
+        ["job_satisfaction", "مؤشر الرضا الوظيفي"]
+      ];
+      const domainHtml = displayOrder.map(([id, label]) => {
+        const domain = domainResults[id];
+        if (!domain || typeof domain.average !== "number") return "";
+        return `<li><strong>${label}:</strong> ${domain.average.toFixed(1)} / 4 — التفسير: ${escapeHtml(domain.descriptiveBand || "غير متاح")}</li>`;
       }).join("");
+      const specialistItems = ["bipolar_indicators", "psychosis_indicators"].flatMap(id => {
+        const domain = domainResults[id];
+        if (!domain || Number(domain.positiveCount || 0) === 0) return [];
+        const itemIds = Array.isArray(domain.positiveItemIds) ? domain.positiveItemIds : [];
+        return config.items.filter(item => itemIds.includes(item.id)).map(item => item.text);
+      });
 
       const followUp = calculationResult.followUp || {};
       const followUpText = `
@@ -463,17 +466,22 @@ async function setLoggedIn(nextSession) {
           ? '<p class="small">اختار المستخدم عدم الإجابة عن سؤال سلامة واحد أو أكثر؛ لا يمكن استنتاج وجود الخطر أو غيابه من ذلك. أتح فرصة سرية واختيارية للتواصل مع شخص مؤهل.</p>'
           : '<p class="small">لم تُسجّل إجابة إيجابية في أسئلة السلامة. وهذا لا يثبت غياب الخطر ولا يمنع طلب المساعدة عند الحاجة.</p>';
 
-      const satisfaction = domainResults.job_satisfaction;
-      const satisfactionNote = satisfaction && typeof satisfaction.average === "number"
-        ? '<p><strong>الرضا الوظيفي:</strong> متوسط الموافقة ' + satisfaction.average.toFixed(1) +
-          ' من 4. يُستخدم لاستكشاف تجربة العمل، وليس لتقييم الحالة النفسية تشخيصيًا.</p>'
+      const overallCategory = calculationResult.overallFollowUpCategory ||
+        (["urgent_safety", "immediate_safety_contact"].includes(followUp.level) ? "عرض عاجل على متخصص" :
+         ["prompt_human_review", "specialist_review"].includes(followUp.level) ? "العرض على أخصائي طب نفسي" :
+         followUp.level === "offer_support" ? "تثقيف نفسي ومتابعة" : "لا يوجد ما يستدعي التدخل");
+      const specialistReviewHtml = specialistItems.length
+        ? '<section class="notice"><strong>إجابات تستدعي مراجعة من متخصص:</strong><ul>' +
+          specialistItems.map(item => "<li>" + escapeHtml(item) + "</li>").join("") +
+          '</ul></section>'
         : "";
 
       $("result-summary").innerHTML =
         '<p><strong>تم حفظ إجاباتك بنجاح.</strong></p>' +
         followUpText +
-        '<h3>ملخص المحاور</h3><ul>' + domainHtml + '</ul>' +
-        satisfactionNote + criticalDetails +
+        '<h3>التقييم العام</h3><p><strong>' + escapeHtml(overallCategory) + '</strong></p>' +
+        '<h3>خلاصة المحاور</h3><ul class="domain-summary-list">' + domainHtml + '</ul>' +
+        specialistReviewHtml + criticalDetails +
         '<p class="small">استبيان FieldMind الداخلي من تصميم صاحب المشروع، وقواعده تجريبية وغير معتمدة. لا يثبت وجود اضطراب نفسي أو ينفيه، ولا يصدر قرارًا بشأن اللياقة للعمل. يمكن طلب المساعدة في أي وقت، بصرف النظر عن النتيجة.</p>';
       if (isAdmin) {
         await loadAdminRecords();
@@ -619,7 +627,7 @@ if (tbody) {
         <td>${escapeHtml(row.created_at
           ? new Date(row.created_at).toLocaleString("ar-EG")
           : "—")}</td>
-        <td>${escapeHtml(row.user_id || "—")}</td>
+        <td>${escapeHtml(row.user_email || "—")}</td>
         <td>${escapeHtml(row.scale_version || "—")}</td>
         <td>${escapeHtml(
           (row.status || row.result?.status) === "calculation_preview_only"
@@ -801,11 +809,11 @@ $("export-results-button")?.addEventListener("click", () => {
   }
 
   const headers = [
-    "تاريخ التقييم",
-    "معرّف الحساب",
-    "نسخة الاستبيان",
-    "أولوية المتابعة",
-    "ملخص المحاور الوصفي"
+    "وقت الاختبار (التاريخ فقط)",
+    "اسم المستخدم (البريد الإلكتروني)",
+    "نسخة المقياس",
+    "التقييم العام",
+    "المحور ودرجته"
   ];
 
   const csvCell = (value) => {
@@ -822,33 +830,22 @@ $("export-results-button")?.addEventListener("click", () => {
   const rows = visibleDashboardRows.map((row) => {
     const result = row.result || {};
     const domains = result.domains || row.domains || {};
-    const domainSummary = Object.entries(domains).map(([key, value]) => {
-      if (!value || typeof value !== "object") return key + ": —";
-      if (typeof value.average === "number") {
-        return (value.title || key) + ": " + value.average.toFixed(1) + "/4";
-      }
-      if (value.kind === "flag") {
-        return (value.title || key) + ": " +
-          (Number(value.positiveCount) > 0
-            ? "تحتاج استيضاحًا متخصصًا"
-            : Number(value.declinedCount) > 0
-              ? "اختار المستخدم عدم الإجابة عن سؤال أو أكثر"
-              : "لا توجد إجابة إيجابية مسجلة");
-      }
-      return (value.title || key) + ": —";
-    }).join("؛ ");
-    const dateOnly = row.created_at
-      ? new Date(row.created_at).toLocaleDateString("en-CA")
-      : "";
-    const followUp = result.followUp?.label || row.followUp?.label || "";
-
-    return [
-      dateOnly,
-      row.user_id || "",
-      row.scale_version || result.scaleVersion || "",
-      followUp,
-      domainSummary
+    const displayOrder = [
+      ["depression", "الحالة المزاجية"], ["anxiety", "القلق"], ["panic", "نوبات الخوف"],
+      ["ocd", "الأفكار المزعجة"], ["adjustment", "المرونة"], ["sleep", "النوم"],
+      ["burnout", "الإجهاد الوظيفي"], ["workplace_satisfaction", "الرضا عن بيئة العمل"],
+      ["functional_impact", "الحياة اليومية"], ["job_satisfaction", "مؤشر الرضا الوظيفي"]
     ];
+    const domainSummary = displayOrder.filter(([id]) => typeof domains[id]?.average === "number")
+      .map(([id, label]) => label + ": " + Number(domains[id].average).toFixed(1) + "/4").join("؛ ");
+    const dateOnly = row.created_at ? new Date(row.created_at).toISOString().slice(0, 10) : "";
+    const overall = result.overallFollowUpCategory ||
+      (["urgent_safety", "immediate_safety_contact"].includes(result.followUp?.level)
+        ? "عرض عاجل على متخصص"
+        : ["prompt_human_review", "specialist_review"].includes(result.followUp?.level)
+          ? "العرض على أخصائي طب نفسي"
+          : result.followUp?.level === "offer_support" ? "تثقيف نفسي ومتابعة" : "لا يوجد ما يستدعي التدخل");
+    return [dateOnly, row.user_email || "", row.scale_version || result.scaleVersion || "", overall, domainSummary];
   });
 
   const csv = "\uFEFF" + [
