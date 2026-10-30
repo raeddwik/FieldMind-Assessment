@@ -1,10 +1,6 @@
 name: Deploy FieldMind to GitHub Pages (manual release only)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'index.html'
   workflow_dispatch:
     inputs:
       confirm_release:
@@ -24,7 +20,7 @@ concurrency:
 
 jobs:
   build:
-    if: ${{ github.event_name == 'push' || inputs.confirm_release == true }}
+    if: ${{ inputs.confirm_release == true }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
